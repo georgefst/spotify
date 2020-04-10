@@ -1,11 +1,11 @@
 module Servant where --TODO explicit export list
 
 import Control.Applicative
+import Control.Exception
 import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.Aeson
 import Data.Generics.Labels
 import Data.Maybe
 import Data.Monoid
@@ -17,6 +17,7 @@ import Servant.API
 import Servant.Client
 import Text.Pretty.Simple
 
+import Data.Aeson (decode)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base64 as SF
@@ -56,17 +57,29 @@ data Auth = Auth
     , clientSecret :: ClientSecret
     }
 
-runSpotify :: Maybe Manager -> Maybe Token -> Auth -> Spotify a -> IO (Either ClientError a)
-runSpotify mm mt a x = do
+-- covers the common use case
+-- use 'runSpotify'' for more control
+-- can throw 'ClientError'
+runSpotify :: Auth -> Spotify a -> IO a
+runSpotify a x = either throwIO (return . fst) =<< runSpotify' Nothing Nothing a x
+
+--TODO does 'runClientM' guarantee that no other types of exception are thrown?
+runSpotify' :: Maybe Manager -> Maybe Token -> Auth -> Spotify a -> IO (Either ClientError (a, Token))
+runSpotify' mm mt a x = do
     man <- maybe (newManager tlsManagerSettings) return mm
     let env = (a, mkClientEnv man accountsBase)
-        rdr = evalStateT (unSpot x) =<< maybe getTokenSpot return mt
+        rdr = runStateT (unSpot x) =<< maybe getTokenSpot return mt
         cli = runExceptT $ runReaderT rdr env
     join <$> runClientM cli (mkClientEnv man mainBase)
 
 -- simple way to run a single action - for full power use the Spotify monad
-runAction :: Auth -> Action a -> IO (Either ClientError a)
-runAction a = runSpotify Nothing Nothing a . inSpot
+-- can throw 'ClientError'
+-- note that this sets up a new TLS connection each time, and contacts spotify servers to get a temporary access token
+    -- these often take longer than the actual action
+--TODO consider making this obolete by exporting 'Spotify a's rather than 'Action a's
+    -- thus not exporting 'Action' or 'inSpot'
+runAction :: Auth -> Action a -> IO a
+runAction a = runSpotify a . inSpot
 
 
 {- Exposed types -}
@@ -81,6 +94,7 @@ newtype ClientSecret = ClientSecret ByteString
 
 {- Internal helper types -}
 
+--TODO no longer internal
 newtype Token = Token Text deriving Show
 -- TODO do we ever want anything other than 'Bearer'?
 instance ToHttpApiData Token where
@@ -153,26 +167,28 @@ myClientId :: IO ClientId
 myClientId = ClientId <$> BS.readFile "/home/gthomas/personal/spotify-data/id"
 myClientSecret :: IO ClientSecret
 myClientSecret = ClientSecret <$> BS.readFile "/home/gthomas/personal/spotify-data/secret"
+myAuth :: IO Auth
+myAuth = Auth <$> myRefreshToken <*> myClientId <*> myClientSecret
+myAccessToken :: IO Token
+myAccessToken = Token <$> T.readFile "/home/gthomas/personal/spotify-data/token"
 quickRun :: Show a => Action a -> IO ()
 quickRun x = do
-    i <- myClientId
-    s <- myClientSecret
-    rt <- myRefreshToken
-    pPrint =<< runAction (Auth rt i s) x
-reallyQuickRun :: Show a => Action a -> IO () -- unsafe once token expires
-reallyQuickRun x = pPrint =<< runSpotify Nothing (Just myToken) (error "no auth data") (inSpot x)
-quickTok :: IO ()
-quickTok = do
+    a <- myAuth
+    pPrint =<< runAction a x --TODO pPrint only prints half the error compared to 'print' - must be a bug in pretty-simple - investigate
+reallyQuickRun :: Action a -> IO a -- unsafe once token expires
+reallyQuickRun x = do
+    t <- myAccessToken
+    either throwIO (return . fst) =<< runSpotify' Nothing (Just t) (error "no auth data") (inSpot x)
+newTok :: IO (Either ClientError Token)
+newTok = do
     man <- newManager tlsManagerSettings
     let env = mkClientEnv man accountsBase
-    i <- myClientId
-    s <- myClientSecret
-    rt <- myRefreshToken
-    x <- getToken' (Auth rt i s, env)
-    pPrint x --TODO pPrint only prints half the error compared to 'print' - must be a bug in pretty-simple - investigate
-myToken :: Token
-myToken = Token
-    "BQAxO3XNOZjPtNxcHLlIeEveEz7Pd1qenF2lF8pFoPPG_eT-7sEqsXe5QEilpPiPmsz2lXu3u8orV2wWgCRvfTq_0kbcxb7P8TDSMyGZlxHdg1PxvEV5x0NVOpYUifcBtE6o5pES54tjF93z3JRpcVRVhDEBIPVVtlH3wqjqE3M0ZqaG5CToWTK_ZwvNoN5f1ISJWHq5jZ164GkmbtBbS0tZPXHx02A3-QMgs2_tzPJBDkky9ayRNW1nFKCjq3x-I1MCfytsmY7Ve1qeOSb5BVo"
+    a <- myAuth
+    t <- getToken' (a, env)
+    case t of
+        Left _ -> putStrLn "failure"
+        Right (Token tt) -> T.writeFile "/home/gthomas/personal/spotify-data/token" tt
+    return t
 
 
 {- Util -}
