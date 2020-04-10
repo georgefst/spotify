@@ -61,8 +61,11 @@ runSpot mm r i s mt x = do
 {- Exposed types -}
 
 newtype RefreshToken = RefreshToken Text
+    deriving (Eq,Ord,Show)
 newtype ClientId = ClientId ByteString
+    deriving (Eq,Ord,Show)
 newtype ClientSecret = ClientSecret ByteString
+    deriving (Eq,Ord,Show)
 
 
 {- Internal helper types -}
