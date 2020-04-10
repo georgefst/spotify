@@ -46,16 +46,27 @@ newtype Spotify a = Spotify {
     deriving newtype (Functor, Applicative, Monad, MonadIO,
         MonadState Token, MonadReader SpotifyEnv, MonadError ClientError)
 
---TODO use a record
-type SpotifyEnv = (RefreshToken, ClientId, ClientSecret, ClientEnv)
+--TODO use a record?
+type SpotifyEnv = (Auth, ClientEnv)
 
-runSpot :: Maybe Manager -> RefreshToken -> ClientId -> ClientSecret -> Maybe Token -> SpotifyAction a -> IO (Either ClientError a)
-runSpot mm r i s mt x = do
+-- client authorization data
+data Auth = Auth
+    { refreshToken :: RefreshToken
+    , clientId :: ClientId
+    , clientSecret :: ClientSecret
+    }
+
+runSpotify :: Maybe Manager -> Maybe Token -> Auth -> Spotify a -> IO (Either ClientError a)
+runSpotify mm mt a x = do
     man <- maybe (newManager tlsManagerSettings) return mm
-    let env = (r, i, s, mkClientEnv man accountsBase)
-        rdr = evalStateT (unSpot $ inSpot x) =<< maybe getTokenSpot return mt
+    let env = (a, mkClientEnv man accountsBase)
+        rdr = evalStateT (unSpot x) =<< maybe getTokenSpot return mt
         cli = runExceptT $ runReaderT rdr env
     join <$> runClientM cli (mkClientEnv man mainBase)
+
+-- simple way to run a single action - for full power use the Spotify monad
+runAction :: Auth -> Action a -> IO (Either ClientError a)
+runAction a = runSpotify Nothing Nothing a . inSpot
 
 
 {- Exposed types -}
@@ -87,20 +98,21 @@ type AuthHeaderBasic = Header' '[Strict,Required] "Authorization" IdAndSecret
 
 {- Endpoints -}
 
-newtype SpotifyAction a = SpotifyAction (Token -> ClientM a)
+--TODO export opaquely
+newtype Action a = Action (Token -> ClientM a)
 
 --TODO what does the label "user_id" actually do?
 type UserAPI = "users" :> Capture "user_id" Text :> AuthHeader :> Get '[JSON] UserPublic
-getUser :: Text -> SpotifyAction UserPublic
-getUser = SpotifyAction . client (Proxy @UserAPI)
+getUser :: Text -> Action UserPublic
+getUser = Action . client (Proxy @UserAPI)
 
 type MeAPI = "me" :> AuthHeader :> Get '[JSON] UserPublic
-getMe :: SpotifyAction UserPublic
-getMe = SpotifyAction $ client (Proxy @MeAPI)
+getMe :: Action UserPublic
+getMe = Action $ client (Proxy @MeAPI)
 
 type TrackAPI = "tracks" :> Capture "id" Text :> AuthHeader :> Get '[JSON] Track
-getTrack :: Text -> SpotifyAction Track
-getTrack = SpotifyAction . client (Proxy @TrackAPI)
+getTrack :: Text -> Action Track
+getTrack = Action . client (Proxy @TrackAPI)
 
 type AuthAPI = "token" :> ReqBody '[FormUrlEncoded] [(Text, Text)] :> AuthHeaderBasic :> Post '[JSON] TokenResponse
 
@@ -114,19 +126,19 @@ accountsBase = BaseUrl Http "accounts.spotify.com" 80 "api"
 
 {- Helpers -}
 
-inSpot :: SpotifyAction a -> Spotify a
-inSpot (SpotifyAction x) = liftSpot . x =<< get
+inSpot :: Action a -> Spotify a
+inSpot (Action x) = liftSpot . x =<< get
 
 liftSpot :: ClientM a -> Spotify a
 liftSpot = Spotify . lift . lift . lift
 
-getToken :: RefreshToken -> ClientId -> ClientSecret -> ClientM TokenResponse
-getToken (RefreshToken t) i s = client (Proxy @AuthAPI)
+getToken :: Auth -> ClientM TokenResponse
+getToken (Auth (RefreshToken t) i s) = client (Proxy @AuthAPI)
     [ ("grant_type", "refresh_token"), ("refresh_token", t) ]
     (IdAndSecret i s)
 
 getToken' :: SpotifyEnv -> IO (Either ClientError Token)
-getToken' (t, i, s, e) = Token . view #accessToken <<$>> runClientM (getToken t i s) e
+getToken' (a, e) = Token . accessToken <<$>> runClientM (getToken a) e
 
 getTokenSpot :: (MonadIO m, MonadReader SpotifyEnv m, MonadError ClientError m) => m Token
 getTokenSpot = join . liftIO . fmap liftEither . getToken' =<< ask
@@ -136,19 +148,19 @@ getTokenSpot = join . liftIO . fmap liftEither . getToken' =<< ask
 {- Personal helpers -}
 
 myRefreshToken :: IO RefreshToken
-myRefreshToken = RefreshToken <$> T.readFile "/home/george/stuff/spotify-data/refresh"
+myRefreshToken = RefreshToken <$> T.readFile "/home/gthomas/personal/spotify-data/refresh"
 myClientId :: IO ClientId
-myClientId = ClientId <$> BS.readFile "/home/george/stuff/spotify-data/id"
+myClientId = ClientId <$> BS.readFile "/home/gthomas/personal/spotify-data/id"
 myClientSecret :: IO ClientSecret
-myClientSecret = ClientSecret <$> BS.readFile "/home/george/stuff/spotify-data/secret"
-quickRun :: Show a => SpotifyAction a -> IO ()
+myClientSecret = ClientSecret <$> BS.readFile "/home/gthomas/personal/spotify-data/secret"
+quickRun :: Show a => Action a -> IO ()
 quickRun x = do
     i <- myClientId
     s <- myClientSecret
     rt <- myRefreshToken
-    pPrint =<< runSpot Nothing rt i s Nothing x
-reallyQuickRun :: Show a => SpotifyAction a -> IO () -- unsafe once token expires
-reallyQuickRun x = pPrint =<< runSpot Nothing undefined undefined undefined (Just myToken) x
+    pPrint =<< runAction (Auth rt i s) x
+reallyQuickRun :: Show a => Action a -> IO () -- unsafe once token expires
+reallyQuickRun x = pPrint =<< runSpotify Nothing (Just myToken) (error "no auth data") (inSpot x)
 quickTok :: IO ()
 quickTok = do
     man <- newManager tlsManagerSettings
@@ -156,7 +168,7 @@ quickTok = do
     i <- myClientId
     s <- myClientSecret
     rt <- myRefreshToken
-    x <- getToken' (rt,i,s,env)
+    x <- getToken' (Auth rt i s, env)
     pPrint x --TODO pPrint only prints half the error compared to 'print' - must be a bug in pretty-simple - investigate
 myToken :: Token
 myToken = Token
