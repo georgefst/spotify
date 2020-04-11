@@ -44,17 +44,24 @@ import Types --TODO special naming for fields that clash with prelude? eg. 'id'
     -- cons
         -- requires user to care about servant
         -- bespoke type would allow us to be more specific about particular spotify errors
---TODO separate ClientError from token refresh from the one from the endpoint we care about?
---TODO should we provide a transformer? ClientM doesn't...
---TODO should I call this SpotifyM?
---TODO catch any error caused by token timeout
+--TODO remove MonadError constraint somehow (how would we catch expiry?)
+class (MonadIO m, MonadError ClientError m) => MonadSpotify m where
+    getAuth :: m Auth
+    getManager :: m Manager
+    getToken :: m Token
+    putToken :: Token -> m ()
+
 newtype Spotify a = Spotify {
-    unSpot :: StateT Token (ReaderT SpotifyEnv (ExceptT ClientError ClientM)) a}
+    unSpot :: StateT Token (ReaderT SpotifyEnv (ExceptT ClientError IO)) a}
     deriving newtype (Functor, Applicative, Monad, MonadIO,
         MonadState Token, MonadReader SpotifyEnv, MonadError ClientError)
+type SpotifyEnv = (Auth, Manager)
 
---TODO use a record?
-type SpotifyEnv = (Auth, ClientEnv)
+instance MonadSpotify Spotify where
+    getAuth = asks fst
+    getManager = asks snd
+    getToken = get
+    putToken = put
 
 -- client authorization data
 data Auth = Auth
@@ -73,10 +80,9 @@ runSpotify a x = either throwIO (return . fst) =<< runSpotify' Nothing Nothing a
 runSpotify' :: Maybe Manager -> Maybe Token -> Auth -> Spotify a -> IO (Either ClientError (a, Token))
 runSpotify' mm mt a x = do
     man <- maybe (newManager tlsManagerSettings) return mm
-    let env = (a, mkClientEnv man accountsBase)
-        rdr = runStateT (unSpot x) =<< maybe getTokenSpot return mt
-        cli = runExceptT $ runReaderT rdr env
-    join <$> runClientM cli (mkClientEnv man mainBase)
+    let getTok = liftEither =<< liftIO (newToken a man)
+        rdr = runStateT (unSpot x) =<< maybe getTok return mt
+    runExceptT $ runReaderT rdr (a, man)
 
 -- simple way to run a single action - for full power use the Spotify monad
 -- can throw 'ClientError'
@@ -152,40 +158,46 @@ accountsBase = BaseUrl Http "accounts.spotify.com" 80 "api"
 
 {- Helpers -}
 
-inSpot :: Action a -> Spotify a
+inSpot :: forall m a. MonadSpotify m => Action a -> m a
 inSpot a@(Action x) = do
-    tok <- get
-    liftSpot (tryError $ x tok) >>= \case
-    --TODO why does the following not catch? monad stack order?
-    -- tryError (liftSpot $ x tok) >>= \case
-        -- if we weren't forced to lift in this awkward order, we could realise this as
-            -- (the MonadError equivalent of) 'catchJust'
-        Right r -> return r
-        Left e -> case e of -- some error occurred
-            FailureResponse _ resp -> do
-                Error{message} <- liftEither $ bimap mkError error $ eitherDecode (responseBody resp)
-                if statusCode (responseStatusCode resp) == 401 && message == "The access token expired" then do
-                    -- token has expired
-                    --TODO log this?
-                    put =<< getTokenSpot
-                    inSpot a -- try again with the new token
-                else throwError e -- some other error, re-throw
+    tok <- getToken
+    catchErrorBool expiry (liftSpot mainBase $ x tok) $ const $ do
+        -- token expired - get a new one and retry
+        --TODO log this?
+        putToken =<< getTokenSpot
+        inSpot a -- try again with the new token
+    where
+        -- does the error indicate that the access token has expired?
+        expiry :: ClientError -> m Bool
+        expiry = \case
+            FailureResponse _ resp ->
+                if statusCode (responseStatusCode resp) == 401 then do
+                    Error{message} <- liftEither $ bimap mkError error $ eitherDecode (responseBody resp)
+                    if message == "The access token expired" then return True
+                    else no
+                else no
                 where mkError s = DecodeFailure ("Failed to decode a spotify error: " <> T.pack s) resp
-            _ -> throwError e -- some other error, re-throw
+            _ -> no
+            where no = return False
 
-liftSpot :: ClientM a -> Spotify a
-liftSpot = Spotify . lift . lift . lift
+liftSpot :: MonadSpotify m => BaseUrl -> ClientM a -> m a
+liftSpot b x = do
+    m <- getManager
+    liftEither =<< liftIO (runClientM x $ mkClientEnv m b)
 
-getToken :: Auth -> ClientM TokenResponse
-getToken (Auth (RefreshToken t) i s) = client (Proxy @AuthAPI)
+requestToken :: Auth -> ClientM TokenResponse
+requestToken (Auth (RefreshToken t) i s) = client (Proxy @AuthAPI)
     [ ("grant_type", "refresh_token"), ("refresh_token", t) ]
     (IdAndSecret i s)
 
-getToken' :: SpotifyEnv -> IO (Either ClientError Token)
-getToken' (a, e) = Token . accessToken <<$>> runClientM (getToken a) e
+newToken :: Auth -> Manager -> IO (Either ClientError Token)
+newToken a m = Token . accessToken <<$>> runClientM (requestToken a) (mkClientEnv m accountsBase)
 
-getTokenSpot :: (MonadIO m, MonadReader SpotifyEnv m, MonadError ClientError m) => m Token
-getTokenSpot = join . liftIO . fmap liftEither . getToken' =<< ask
+getTokenSpot :: MonadSpotify m => m Token
+getTokenSpot = do
+    a <- getAuth
+    m <- getManager
+    liftEither =<< liftIO (newToken a m)
 
 
 --TODO remove before release
@@ -212,9 +224,8 @@ reallyQuickRun x = do
 newTok :: IO (Either ClientError Token)
 newTok = do
     man <- newManager tlsManagerSettings
-    let env = mkClientEnv man accountsBase
     a <- myAuth
-    t <- getToken' (a, env)
+    t <- newToken a man
     case t of
         Left _ -> putStrLn "failure"
         Right (Token tt) -> T.writeFile "/home/gthomas/personal/spotify-data/token" tt
@@ -235,3 +246,8 @@ uncurry3 f (x,y,z) = f x y z
 
 tryError :: MonadError e m => m a -> m (Either e a)
 tryError x = catchError (Right <$> x) $ return . Left
+
+catchErrorBool :: MonadError e m => (e -> m Bool) -> m a -> (e -> m a) -> m a
+catchErrorBool f x h = catchError x $ \e -> do
+    b <- f e
+    if b then h e else throwError e
