@@ -52,10 +52,9 @@ class MonadIO m => MonadSpotify m where
     throwClientError :: ClientError -> m a
 
 newtype Spotify a = Spotify {
-    unSpot :: StateT Token (ReaderT SpotifyEnv (ExceptT ClientError IO)) a}
+    unSpot :: StateT Token (ReaderT (Auth, Manager) (ExceptT ClientError IO)) a}
     deriving newtype (Functor, Applicative, Monad, MonadIO,
-        MonadState Token, MonadReader SpotifyEnv, MonadError ClientError)
-type SpotifyEnv = (Auth, Manager)
+        MonadState Token, MonadReader (Auth, Manager), MonadError ClientError)
 
 instance MonadSpotify Spotify where
     getAuth = asks fst
