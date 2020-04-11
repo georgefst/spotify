@@ -230,6 +230,11 @@ newTok = do
         Left _ -> putStrLn "failure"
         Right (Token tt) -> T.writeFile "/home/gthomas/personal/spotify-data/token" tt
     return t
+testAutoRefresh :: IO UserPublic
+testAutoRefresh = do
+    a <- myAuth
+    t <- Token <$> T.readFile "/home/gthomas/personal/spotify-data/token-old"
+    either throwIO (return . fst) =<< runSpotify' Nothing (Just t) a (inSpot getMe)
 
 
 {- Util -}
