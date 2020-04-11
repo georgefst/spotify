@@ -44,12 +44,12 @@ import Types --TODO special naming for fields that clash with prelude? eg. 'id'
     -- cons
         -- requires user to care about servant
         -- bespoke type would allow us to be more specific about particular spotify errors
---TODO remove MonadError constraint somehow (how would we catch expiry?)
-class (MonadIO m, MonadError ClientError m) => MonadSpotify m where
+class MonadIO m => MonadSpotify m where
     getAuth :: m Auth
     getManager :: m Manager
     getToken :: m Token
     putToken :: Token -> m ()
+    throwClientError :: ClientError -> m a
 
 newtype Spotify a = Spotify {
     unSpot :: StateT Token (ReaderT SpotifyEnv (ExceptT ClientError IO)) a}
@@ -62,6 +62,7 @@ instance MonadSpotify Spotify where
     getManager = asks snd
     getToken = get
     putToken = put
+    throwClientError = throwError
 
 -- client authorization data
 data Auth = Auth
@@ -161,18 +162,25 @@ accountsBase = BaseUrl Http "accounts.spotify.com" 80 "api"
 inSpot :: forall m a. MonadSpotify m => Action a -> m a
 inSpot a@(Action x) = do
     tok <- getToken
-    catchErrorBool expiry (liftSpot mainBase $ x tok) $ const $ do
-        -- token expired - get a new one and retry
-        --TODO log this?
-        putToken =<< getTokenSpot
-        inSpot a -- try again with the new token
+    man <- getManager
+    liftIO (runClientM (x tok) $ mkClientEnv man mainBase) >>= \case
+        Left e -> expiry e >>= \case
+            True -> retry
+            False -> throwClientError e
+        Right r -> return r
     where
+        -- get a new token and try again
+        --TODO log this?
+        retry :: m a
+        retry = do
+            putToken =<< getTokenSpot
+            inSpot a -- try again with the new token
         -- does the error indicate that the access token has expired?
         expiry :: ClientError -> m Bool
         expiry = \case
             FailureResponse _ resp ->
                 if statusCode (responseStatusCode resp) == 401 then do
-                    Error{message} <- liftEither $ bimap mkError error $ eitherDecode (responseBody resp)
+                    Error{message} <- liftEitherSpot $ bimap mkError error $ eitherDecode $ responseBody resp
                     if message == "The access token expired" then return True
                     else no
                 else no
@@ -180,10 +188,8 @@ inSpot a@(Action x) = do
             _ -> no
             where no = return False
 
-liftSpot :: MonadSpotify m => BaseUrl -> ClientM a -> m a
-liftSpot b x = do
-    m <- getManager
-    liftEither =<< liftIO (runClientM x $ mkClientEnv m b)
+liftEitherSpot :: MonadSpotify m => Either ClientError a -> m a
+liftEitherSpot = either throwClientError return
 
 requestToken :: Auth -> ClientM TokenResponse
 requestToken (Auth (RefreshToken t) i s) = client (Proxy @AuthAPI)
@@ -197,7 +203,7 @@ getTokenSpot :: MonadSpotify m => m Token
 getTokenSpot = do
     a <- getAuth
     m <- getManager
-    liftEither =<< liftIO (newToken a m)
+    liftEitherSpot =<< liftIO (newToken a m)
 
 
 --TODO remove before release
