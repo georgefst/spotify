@@ -50,6 +50,7 @@ class MonadIO m => MonadSpotify m where
     getToken :: m Token
     putToken :: Token -> m ()
     throwClientError :: ClientError -> m a
+    throwClientError = liftIO . throwIO --TODO document default behaviour
 
 newtype Spotify a = Spotify {
     unSpot :: StateT Token (ReaderT (Auth, Manager) (ExceptT ClientError IO)) a}
