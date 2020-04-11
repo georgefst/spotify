@@ -1,26 +1,32 @@
 module Servant where --TODO explicit export list
 
+-- we hide 'error' to ease deriving the FromJSON instance for Error' (who wants errors, anyway...)
+import Prelude hiding (error)
+
 import Control.Applicative
 import Control.Exception
 import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
+import Data.Bifunctor
 import Data.Generics.Labels
 import Data.Maybe
 import Data.Monoid
 import Data.Proxy
 import Lens.Micro.Extras
-import Network.HTTP.Client hiding (Proxy)
+import Network.HTTP.Client (Manager,newManager)
 import Network.HTTP.Client.TLS
+import Network.HTTP.Types (Status(statusCode))
 import Servant.API
 import Servant.Client
 import Text.Pretty.Simple
 
-import Data.Aeson (decode)
+import Data.Aeson (FromJSON,eitherDecode)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base64 as SF
+import qualified Data.ByteString.Lazy as BL
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -109,6 +115,11 @@ type AuthHeader = Header' '[Strict,Required] "Authorization" Token
 
 type AuthHeaderBasic = Header' '[Strict,Required] "Authorization" IdAndSecret
 
+-- this aligns with the errors we get from Spotify via Servant
+newtype Error' = Error' { error :: Error }
+    deriving stock (Eq, Ord, Show, Generic)
+    deriving anyclass FromJSON
+
 
 {- Endpoints -}
 
@@ -141,7 +152,25 @@ accountsBase = BaseUrl Http "accounts.spotify.com" 80 "api"
 {- Helpers -}
 
 inSpot :: Action a -> Spotify a
-inSpot (Action x) = liftSpot . x =<< get
+inSpot a@(Action x) = do
+    tok <- get
+    liftSpot (tryError $ x tok) >>= \case
+    --TODO why does the following not catch? monad stack order?
+    -- tryError (liftSpot $ x tok) >>= \case
+        -- if we weren't forced to lift in this awkward order, we could realise this as
+            -- (the MonadError equivalent of) 'catchJust'
+        Right r -> return r
+        Left e -> case e of -- some error occurred
+            FailureResponse _ resp -> do
+                Error{message} <- liftEither $ bimap mkError error $ eitherDecode (responseBody resp)
+                if statusCode (responseStatusCode resp) == 401 && message == "The access token expired" then do
+                    -- token has expired
+                    --TODO log this?
+                    put =<< getTokenSpot
+                    inSpot a -- try again with the new token
+                else throwError e -- some other error, re-throw
+                where mkError s = DecodeFailure ("Failed to decode a spotify error: " <> T.pack s) resp
+            _ -> throwError e -- some other error, re-throw
 
 liftSpot :: ClientM a -> Spotify a
 liftSpot = Spotify . lift . lift . lift
@@ -178,7 +207,7 @@ quickRun x = do
 reallyQuickRun :: Action a -> IO a -- unsafe once token expires
 reallyQuickRun x = do
     t <- myAccessToken
-    either throwIO (return . fst) =<< runSpotify' Nothing (Just t) (error "no auth data") (inSpot x)
+    either throwIO (return . fst) =<< runSpotify' Nothing (Just t) undefined (inSpot x)
 newTok :: IO (Either ClientError Token)
 newTok = do
     man <- newManager tlsManagerSettings
@@ -202,3 +231,6 @@ infixl 4 <<$>>
 
 uncurry3 :: (t1 -> t2 -> t3 -> t4) -> (t1, t2, t3) -> t4
 uncurry3 f (x,y,z) = f x y z
+
+tryError :: MonadError e m => m a -> m (Either e a)
+tryError x = catchError (Right <$> x) $ return . Left
