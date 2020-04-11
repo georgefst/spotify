@@ -108,7 +108,8 @@ instance ToHttpApiData Token where
 
 data IdAndSecret = IdAndSecret ClientId ClientSecret
 instance ToHttpApiData IdAndSecret where
-    toUrlPiece (IdAndSecret (ClientId i) (ClientSecret s)) = toUrlPiece . ("Basic " <>) . T.decodeUtf8 . SF.encode $ i <> ":" <> s
+    toUrlPiece (IdAndSecret (ClientId i) (ClientSecret s)) =
+        toUrlPiece . ("Basic " <>) . T.decodeUtf8 . SF.encode $ i <> ":" <> s
 
 --TODO do we want Strict?
 type AuthHeader = Header' '[Strict,Required] "Authorization" Token
