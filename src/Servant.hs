@@ -74,9 +74,7 @@ instance MonadSpotify IO where
     getToken = do
         path <- tokenPath
         Token <$> T.readFile path <|> do
-            a <- getAuth
-            m <- getManager
-            tok <- liftEitherSpot =<< newToken a m
+            tok <- newToken
             putToken tok
             return tok
     putToken (Token t) = do
@@ -105,28 +103,13 @@ data Auth = Auth
     , clientSecret :: ClientSecret
     }
 
--- covers the common use case
--- use 'runSpotify'' for more control
--- can throw 'ClientError'
-runSpotify :: Auth -> Spotify a -> IO a
-runSpotify a x = either throwIO (return . fst) =<< runSpotify' Nothing Nothing a x
-
 --TODO does 'runClientM' guarantee that no other types of exception are thrown?
-runSpotify' :: Maybe Manager -> Maybe Token -> Auth -> Spotify a -> IO (Either ClientError (a, Token))
-runSpotify' mm mt a x = do
+runSpotify :: Maybe Manager -> Maybe Token -> Auth -> Spotify a -> IO (Either ClientError (a, Token))
+runSpotify mm mt a x = do
     man <- maybe (newManager tlsManagerSettings) return mm
-    let getTok = liftEither =<< liftIO (newToken a man)
+    let getTok = liftEither =<< liftIO (newTokenIO a man)
         rdr = runStateT (unSpot x) =<< maybe getTok return mt
     runExceptT $ runReaderT rdr (a, man)
-
--- simple way to run a single action - for full power use the Spotify monad
--- can throw 'ClientError'
--- note that this sets up a new TLS connection each time, and contacts spotify servers to get a temporary access token
-    -- these often take longer than the actual action
---TODO consider making this obolete by exporting 'Spotify a's rather than 'Action a's
-    -- thus not exporting 'Action' or 'inSpot'
-runAction :: Auth -> Action a -> IO a
-runAction a = runSpotify a . inSpot
 
 
 {- Exposed types -}
@@ -165,21 +148,18 @@ newtype Error' = Error' { error :: Error }
 
 {- Endpoints -}
 
---TODO export opaquely
-newtype Action a = Action (Token -> ClientM a)
-
 --TODO what does the label "user_id" actually do?
 type UserAPI = "users" :> Capture "user_id" Text :> AuthHeader :> Get '[JSON] UserPublic
-getUser :: Text -> Action UserPublic
-getUser = Action . client (Proxy @UserAPI)
+getUser :: MonadSpotify m => Text -> m UserPublic
+getUser = inSpot . client (Proxy @UserAPI)
 
 type MeAPI = "me" :> AuthHeader :> Get '[JSON] UserPublic
-getMe :: Action UserPublic
-getMe = Action $ client (Proxy @MeAPI)
+getMe :: MonadSpotify m => m UserPublic
+getMe = inSpot $ client (Proxy @MeAPI)
 
 type TrackAPI = "tracks" :> Capture "id" Text :> AuthHeader :> Get '[JSON] Track
-getTrack :: Text -> Action Track
-getTrack = Action . client (Proxy @TrackAPI)
+getTrack :: MonadSpotify m => Text -> m Track
+getTrack = inSpot . client (Proxy @TrackAPI)
 
 type AuthAPI = "token" :> ReqBody '[FormUrlEncoded] [(Text, Text)] :> AuthHeaderBasic :> Post '[JSON] TokenResponse
 
@@ -193,8 +173,8 @@ accountsBase = BaseUrl Http "accounts.spotify.com" 80 "api"
 
 {- Helpers -}
 
-inSpot :: forall m a. MonadSpotify m => Action a -> m a
-inSpot a@(Action x) = do
+inSpot :: forall m a . MonadSpotify m => (Token -> ClientM a) -> m a
+inSpot x = do
     tok <- getToken
     man <- getManager
     liftIO (runClientM (x tok) $ mkClientEnv man mainBase) >>= \case
@@ -207,8 +187,8 @@ inSpot a@(Action x) = do
         --TODO log this?
         retry :: m a
         retry = do
-            putToken =<< getTokenSpot
-            inSpot a -- try again with the new token
+            putToken =<< newToken
+            inSpot x
         -- does the error indicate that the access token has expired?
         expiry :: ClientError -> m Bool
         expiry = \case
@@ -230,14 +210,11 @@ requestToken (Auth (RefreshToken t) i s) = client (Proxy @AuthAPI)
     [ ("grant_type", "refresh_token"), ("refresh_token", t) ]
     (IdAndSecret i s)
 
-newToken :: Auth -> Manager -> IO (Either ClientError Token)
-newToken a m = Token . accessToken <<$>> runClientM (requestToken a) (mkClientEnv m accountsBase)
+newTokenIO :: Auth -> Manager -> IO (Either ClientError Token)
+newTokenIO a m = Token . accessToken <<$>> runClientM (requestToken a) (mkClientEnv m accountsBase)
 
-getTokenSpot :: MonadSpotify m => m Token
-getTokenSpot = do
-    a <- getAuth
-    m <- getManager
-    liftEitherSpot =<< liftIO (newToken a m)
+newToken :: MonadSpotify m => m Token
+newToken = liftEitherSpot =<< liftIO =<< (newTokenIO <$> getAuth <*> getManager)
 
 
 {- Util -}
