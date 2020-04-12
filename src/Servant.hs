@@ -76,7 +76,9 @@ instance MonadSpotify IO where
         Token <$> T.readFile path <|> do
             a <- getAuth
             m <- getManager
-            liftEitherSpot =<< newToken a m
+            tok <- liftEitherSpot =<< newToken a m
+            putToken tok
+            return tok
     putToken (Token t) = do
         path <- tokenPath
         T.writeFile path t
