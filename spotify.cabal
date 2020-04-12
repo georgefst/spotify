@@ -30,6 +30,8 @@ library
                        base64-bytestring,
                        bytestring,
                        containers,
+                       directory,
+                       filepath,
                        http-client-tls,
                        http-client,
                        http-types,

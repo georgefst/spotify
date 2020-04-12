@@ -20,6 +20,8 @@ import Network.HTTP.Client.TLS
 import Network.HTTP.Types (Status(statusCode))
 import Servant.API
 import Servant.Client
+import System.Directory
+import System.FilePath
 import Text.Pretty.Simple
 
 import Data.Aeson (FromJSON,eitherDecode)
@@ -51,6 +53,36 @@ class MonadIO m => MonadSpotify m where
     putToken :: Token -> m ()
     throwClientError :: ClientError -> m a
     throwClientError = liftIO . throwIO --TODO document default behaviour
+
+--TODO document this fully, with caveat about writing secret and token to disk etc.
+-- useful for REPL use etc.
+instance MonadSpotify IO where
+    getAuth = do
+        dir <- getXdgDirectory XdgData "spotify-web-haskell"
+        let getData :: FilePath -> Text -> IO Text -- look for file - otherwise get from stdin
+            getData file prompt = T.readFile path <|> do
+                res <- T.putStr (prompt <> ": ") >> T.getLine
+                createDirectoryIfMissing False dir
+                T.writeFile path res
+                return res
+                where path = dir </> file
+        Auth
+            <$> (RefreshToken                <$> getData "refresh" "Refresh token")
+            <*> (ClientId     . T.encodeUtf8 <$> getData "id"      "Client id"    )
+            <*> (ClientSecret . T.encodeUtf8 <$> getData "secret"  "Client secret")
+    getManager = newManager tlsManagerSettings
+    getToken = do
+        path <- tokenPath
+        Token <$> T.readFile path <|> do
+            a <- getAuth
+            m <- getManager
+            liftEitherSpot =<< newToken a m
+    putToken (Token t) = do
+        path <- tokenPath
+        T.writeFile path t
+
+tokenPath :: IO FilePath
+tokenPath = (</> "spotify-haskell-token") <$> getTemporaryDirectory
 
 newtype Spotify a = Spotify {
     unSpot :: StateT Token (ReaderT (Auth, Manager) (ExceptT ClientError IO)) a}
@@ -204,43 +236,6 @@ getTokenSpot = do
     a <- getAuth
     m <- getManager
     liftEitherSpot =<< liftIO (newToken a m)
-
-
---TODO remove before release
-{- Personal helpers -}
-
-myRefreshToken :: IO RefreshToken
-myRefreshToken = RefreshToken <$> T.readFile "/home/gthomas/personal/spotify-data/refresh"
-myClientId :: IO ClientId
-myClientId = ClientId <$> BS.readFile "/home/gthomas/personal/spotify-data/id"
-myClientSecret :: IO ClientSecret
-myClientSecret = ClientSecret <$> BS.readFile "/home/gthomas/personal/spotify-data/secret"
-myAuth :: IO Auth
-myAuth = Auth <$> myRefreshToken <*> myClientId <*> myClientSecret
-myAccessToken :: IO Token
-myAccessToken = Token <$> T.readFile "/home/gthomas/personal/spotify-data/token"
-quickRun :: Show a => Action a -> IO ()
-quickRun x = do
-    a <- myAuth
-    pPrint =<< runAction a x --TODO pPrint only prints half the error compared to 'print' - must be a bug in pretty-simple - investigate
-reallyQuickRun :: Action a -> IO a -- unsafe once token expires
-reallyQuickRun x = do
-    t <- myAccessToken
-    either throwIO (return . fst) =<< runSpotify' Nothing (Just t) undefined (inSpot x)
-newTok :: IO (Either ClientError Token)
-newTok = do
-    man <- newManager tlsManagerSettings
-    a <- myAuth
-    t <- newToken a man
-    case t of
-        Left _ -> putStrLn "failure"
-        Right (Token tt) -> T.writeFile "/home/gthomas/personal/spotify-data/token" tt
-    return t
-testAutoRefresh :: IO UserPublic
-testAutoRefresh = do
-    a <- myAuth
-    t <- Token <$> T.readFile "/home/gthomas/personal/spotify-data/token-old"
-    either throwIO (return . fst) =<< runSpotify' Nothing (Just t) a (inSpot getMe)
 
 
 {- Util -}
