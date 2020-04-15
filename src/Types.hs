@@ -38,7 +38,7 @@ data Album = Album
     , label :: Text
     , name :: Text
     , popularity :: Int
-    , releaseDate :: Day
+    , releaseDate :: Text
     , releaseDatePrecision :: DatePrecision --TODO find test example where this is not "day" - check previous field parses - spotify:track:1idiifjTcCoGfBeZiYOdim
     , restrictions :: Maybe Restrictions
     , tracks :: Paging TrackSimplified
@@ -56,7 +56,7 @@ data AlbumSimplified = AlbumSimplified
     , id :: ID
     , images :: [Image]
     , name :: Text
-    , releaseDate :: Day
+    , releaseDate :: Text --TODO work out general format - seems to vary a lot
     , releaseDatePrecision :: DatePrecision
     , restrictions :: Maybe Restrictions
     , uri :: URI
