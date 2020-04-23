@@ -41,6 +41,7 @@ library
                        text,
                        time,
                        transformers,
+                       unordered-containers,
 
                        --TODO consider removing
                        generic-lens,
@@ -62,6 +63,7 @@ library
                        OverloadedLabels
                        OverloadedStrings
                        PartialTypeSignatures
+                       PolyKinds
                        RankNTypes
                        RecordWildCards
                        ScopedTypeVariables

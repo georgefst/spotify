@@ -214,7 +214,7 @@ data Paging a = Paging
     { href :: Text
     , items :: [a]
     , limit :: Int
-    , next :: Maybe Text
+    , next :: Maybe Text --TODO Maybe (IO (Paging a))
     , offset :: Int
     , previous :: Maybe Text
     , total :: Int
@@ -381,6 +381,12 @@ data Actions = Actions {
     disallows :: Disallows
 }   deriving (Eq, Ord, Show, Generic)
     deriving FromJSON via Record Actions
+
+data SavedTrack = SavedTrack
+    { addedAt :: Text --TODO should be a timestamp
+    , track :: Track
+}   deriving (Eq, Ord, Show, Generic)
+    deriving FromJSON via Record SavedTrack
 
 
 {- Util -}
