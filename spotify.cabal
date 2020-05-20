@@ -1,74 +1,81 @@
-cabal-version:       2.4
-name:                spotify
-version:             0.1.0.0
-author:              George Thomas
-maintainer:          George Thomas
-description:         Haskell interface for interacting with the Spotify Web API
-synopsis:            Spotify Web API
-homepage:            https://github.com/georgefst/spotify
-license:             BSD-3-Clause
-license-file:        LICENSE
-category:            Web
-build-type:          Simple
-extra-source-files:  CHANGELOG.md
-                     README.md
+cabal-version:      2.4
+name:               spotify
+version:            0.1.0.0
+author:             George Thomas
+maintainer:         George Thomas
+description:        Haskell interface for interacting with the Spotify Web API
+synopsis:           Spotify Web API
+homepage:           https://github.com/georgefst/spotify
+license:            BSD-3-Clause
+license-file:       LICENSE
+category:           Music, Web
+build-type:         Simple
+extra-source-files:
+    CHANGELOG.md
+    README.md
 
 source-repository head
-  type:     git
-  location: git://github.com/georgefst/spotify.git
+    type: git
+    location: git://github.com/georgefst/spotify.git
 
 library
-  exposed-modules:     Types
-                       Servant
-  hs-source-dirs:      src
-  ghc-options:         -Wall
+    exposed-modules:
+        Types
+        Servant
+    hs-source-dirs: src
+    ghc-options:
+        -Wall
 
-                       --TODO remove before releasing
-                       -Wno-unused-imports
-  build-depends:       base >= 4.12 && < 5,
-                       aeson,
-                       base64-bytestring,
-                       bytestring,
-                       composition,
-                       containers,
-                       directory,
-                       filepath,
-                       http-client-tls,
-                       http-client,
-                       http-types,
-                       mtl,
-                       servant-client,
-                       servant,
-                       text,
-                       time,
-                       transformers,
-                       unordered-containers,
+        --TODO remove before releasing
+        -Wno-unused-imports
+    build-depends:
+        base >= 4.12 && < 5,
+        aeson,
+        base64-bytestring,
+        bytestring,
+        composition,
+        containers,
+        directory,
+        filepath,
+        http-client-tls,
+        http-client,
+        http-types,
+        mtl,
+        servant-client,
+        servant,
+        text,
+        time,
+        transformers,
+        unordered-containers,
 
-                       --TODO consider removing
-                       generic-lens,
-                       microlens,
-                       pretty-simple
-  default-language:    Haskell2010
-  default-extensions:  DataKinds
-                       DeriveAnyClass
-                       DeriveGeneric
-                       DerivingStrategies
-                       DerivingVia
-                       DuplicateRecordFields
-                       FlexibleContexts
-                       FlexibleInstances
-                       GeneralizedNewtypeDeriving
-                       LambdaCase
-                       MultiParamTypeClasses
-                       NamedFieldPuns
-                       OverloadedLabels
-                       OverloadedStrings
-                       PartialTypeSignatures
-                       PolyKinds
-                       RankNTypes
-                       RecordWildCards
-                       ScopedTypeVariables
-                       TupleSections
-                       TypeApplications
-                       TypeFamilies
-                       TypeOperators
+        --TODO consider removing
+        generic-lens,
+        microlens,
+        pretty-simple
+    default-language: Haskell2010
+    default-extensions:
+        DataKinds
+        DeriveAnyClass
+        DeriveGeneric
+        DerivingStrategies
+        DerivingVia
+        DuplicateRecordFields
+        FlexibleContexts
+        FlexibleInstances
+        GeneralizedNewtypeDeriving
+        LambdaCase
+        MultiParamTypeClasses
+        NamedFieldPuns
+        OverloadedLabels
+        OverloadedStrings
+        PartialTypeSignatures
+        PolyKinds
+        RankNTypes
+        RecordWildCards
+        ScopedTypeVariables
+        TupleSections
+        TypeApplications
+        TypeFamilies
+        TypeOperators
+    other-extensions:
+        AllowAmbiguousTypes
