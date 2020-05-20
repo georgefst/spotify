@@ -29,6 +29,7 @@ library
                        aeson,
                        base64-bytestring,
                        bytestring,
+                       composition,
                        containers,
                        directory,
                        filepath,

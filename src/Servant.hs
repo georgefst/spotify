@@ -1,3 +1,8 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+-- https://developer.spotify.com/documentation/web-api/reference/
+    -- (at time of writing (May 2020) the beta documentation suggested is crap)
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 module Servant where --TODO explicit export list
 
 -- we hide 'error' to ease deriving the FromJSON instance for Error' (who wants errors, anyway...)
@@ -9,8 +14,8 @@ import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.Aeson hiding (Error, (.:))
 import Data.Bifunctor
+import Data.Composition
 import Data.Generics.Labels
 import Data.Maybe
 import Data.Monoid
@@ -26,12 +31,15 @@ import System.Directory
 import System.FilePath
 import Text.Pretty.Simple
 
+import qualified Data.Aeson as JSON
+import Data.Aeson (FromJSON(..),ToJSON(..))
 import Data.Aeson.Types (Parser)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base64 as SF
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.HashMap.Strict as H
+import Data.Kind (Type)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -84,7 +92,6 @@ instance MonadSpotify IO where
     putToken (Token t) = do
         path <- tokenPath
         T.writeFile path t
-
 tokenPath :: IO FilePath
 tokenPath = (</> "spotify-haskell-token") <$> getTemporaryDirectory
 
@@ -106,14 +113,6 @@ data Auth = Auth
     , clientId :: ClientId
     , clientSecret :: ClientSecret
     }
-
---TODO does 'runClientM' guarantee that no other types of exception are thrown?
-runSpotify :: Maybe Manager -> Maybe Token -> Auth -> Spotify a -> IO (Either ClientError (a, Token))
-runSpotify mm mt a x = do
-    man <- maybe (newManager tlsManagerSettings) return mm
-    let getTok = liftEither =<< liftIO (newTokenIO a man)
-        rdr = runStateT (unSpot x) =<< maybe getTok return mt
-    runExceptT $ runReaderT rdr (a, man)
 
 
 {- Exposed types -}
@@ -149,68 +148,6 @@ newtype Error' = Error' { error :: Error }
     deriving stock (Eq, Ord, Show, Generic)
     deriving anyclass FromJSON
 
-{- Endpoints - see https://developer.spotify.com/documentation/web-api/reference-beta -}
-
-nc :: NoContent -> ()
-nc = const ()
-
-c0 :: (MonadSpotify m, HasClient ClientM api,
-         Client ClientM api ~ (Token -> ClientM a)) =>
-        Proxy api -> m a
-c0 = c0' identity identity
-c1 :: (MonadSpotify m, HasClient ClientM api,
-         Client ClientM api ~ (a1 -> Token -> ClientM a2)) =>
-        Proxy api -> a1 -> m a2
-c1 = c1' identity identity
-c2 :: (MonadSpotify m, HasClient ClientM api,
-         Client ClientM api ~ (a1 -> a2 -> Token -> ClientM a)) =>
-        Proxy api -> a1 -> a2 -> m a
-c2 = c2' identity identity
-c3 :: (MonadSpotify m, HasClient ClientM api,
-         Client ClientM api ~ (a1 -> a2 -> a4 -> Token -> ClientM a5)) =>
-        Proxy api -> a1 -> a2 -> a4 -> m a5
-c3 = c3' identity identity
-
-j1 :: (JMap js, JT (MapSnd js) ~ (c, ())) => JRes js -> c
-j1 = r1 . jRes
-
-r1 :: (a, ()) -> a
-r1 (a,()) = a
-
-c0' :: (MonadSpotify f, HasClient ClientM api,
-          Client ClientM api ~ (Token -> b1)) =>
-         (b1 -> ClientM a) -> (a -> b2) -> Proxy api -> f b2
-c0' f g p = (fmap g . inSpot) (f . client p)
-c1' :: (MonadSpotify f, HasClient ClientM api,
-          Client ClientM api ~ (a1 -> b1)) =>
-         (b1 -> Token -> ClientM a2)
-         -> (a2 -> b2) -> Proxy api -> a1 -> f b2
-c1' f g p = (fmap g . inSpot) . (f . client p)
-c2' :: (MonadSpotify f, HasClient ClientM api,
-          Client ClientM api ~ (a1 -> b1)) =>
-         (b1 -> a2 -> Token -> ClientM a3)
-         -> (a3 -> b2) -> Proxy api -> a1 -> a2 -> f b2
-c2' f g p = (fmap g . inSpot) .: (f . client p)
-c3' :: (MonadSpotify f, HasClient ClientM api,
-          Client ClientM api ~ (a1 -> b1)) =>
-         (b1 -> a2 -> a3 -> Token -> ClientM a4)
-         -> (a4 -> b2) -> Proxy api -> a1 -> a2 -> a3 -> f b2
-c3' f g p = (fmap g . inSpot) .:. (f . client p)
-c4' :: (MonadSpotify f, HasClient ClientM api,
-          Client ClientM api ~ (a1 -> b1)) =>
-         (b1 -> a2 -> a4 -> a5 -> Token -> ClientM a3)
-         -> (a3 -> b2) -> Proxy api -> a1 -> a2 -> a4 -> a5 -> f b2
-c4' f g p = (fmap g . inSpot) .:: (f . client p)
-c5' :: (MonadSpotify f, HasClient ClientM api,
-          Client ClientM api ~ (a1 -> b1)) =>
-         (b1 -> a2 -> a4 -> a5 -> a3 -> Token -> ClientM a7)
-         -> (a7 -> b2) -> Proxy api -> a1 -> a2 -> a4 -> a5 -> a3 -> f b2
-c5' f g p = (fmap g . inSpot) .::. (f . client p)
-
-type A (v :: StdMethod) a = AuthHeader :> Verb v 200 '[JSON] a
-type B = ReqBody '[JSON]
-type Q = QueryParam' '[Required]
-
 --TODO separate into Map and Snd (or import library)
 type family MapSnd (js :: [(k1,k2)]) :: [k2] where
     MapSnd '[] = '[]
@@ -220,13 +157,13 @@ type family JT (js :: [*]) where
     JT '[] = ()
     JT (j : js) = (j, JT js)
 
-class JMap (js :: [(Symbol,*)]) where
+class JMap (js :: [(Symbol, Type)]) where
     data JRes js
     jRes :: JRes js -> JT (MapSnd js)
-    parseJSON' :: Object -> Parser (JRes js)
+    parseJSON' :: JSON.Object -> Parser (JRes js)
     type JFunc js r
     jFunc :: (JRes js -> r) -> JFunc js r
-    toJSON' :: JRes js -> [(Text,Value)]
+    toJSON' :: JRes js -> [(Text, JSON.Value)]
 instance JMap '[] where
     data JRes '[] = J0
     type JFunc '[] r = r
@@ -247,60 +184,107 @@ instance (JMap js, KnownSymbol s, FromJSON a, ToJSON a) => JMap ('(s,a) : js) wh
 
 instance JMap js => FromJSON (JRes js) where
     parseJSON = \case
-        Object o -> parseJSON' o
+        JSON.Object o -> parseJSON' o
         v -> fail $ "JSON is not an object: " ++ show v
 
 instance JMap js => ToJSON (JRes js) where
-    toJSON = Object . H.fromList . toJSON'
+    toJSON = JSON.Object . H.fromList . toJSON'
 
 --TODO we really ought to newtype this, seeing as comma separation isn't standard (also an orphan)
 instance ToHttpApiData a => ToHttpApiData [a] where
     toQueryParam = T.intercalate "," . map toQueryParam
 
+newtype Market = Market Text
+    deriving newtype ToHttpApiData
+marketFromToken :: (Market -> b) -> b
+marketFromToken = ($ Market "from_token")
 
 
-removeAlbums :: MonadSpotify f => [Text] -> f ()
-removeAlbums = c1' identity nc $ Proxy @("me" :> "albums" :> Q "ids" [Text] :> A 'DELETE NoContent)
+{- Stuff that makes writing all the bindings less tedious, but that I might remove in the long run -}
 
-removeTracks :: MonadSpotify f => [Text] -> f ()
-removeTracks = c1' identity nc $ Proxy @("me" :> "tracks" :> Q "ids" [Text] :> A 'DELETE NoContent)
+type GetS a = AuthHeader :> Get '[JSON] a
+type PutS a = AuthHeader :> Put '[JSON] a
+type PostS a = AuthHeader :> Post '[JSON] a
+type DeleteS a = AuthHeader :> Delete '[JSON] a
 
---TODO fails silently - even through Spotify Web Console
-saveTracks :: MonadSpotify m => [Text] -> m ()
-saveTracks = c1' identity nc $ Proxy @("me" :> "tracks" :> Q "ids" [Text] :> A 'DELETE NoContent)
+type BodyS = ReqBody '[JSON]
+
+client' :: forall api. HasClient ClientM api => Client ClientM api
+client' = client $ Proxy @api
+
+noContent :: NoContent -> ()
+noContent NoContent = ()
+
+tuple1 :: (a, ()) -> a
+tuple1 (a,()) = a
+
+
+{- Albums -}
+
+--TODO what does the label "id" actually do?
+-- getAlbum :: MonadSpotify m => Text -> Text -> m Album
+getAlbum :: MonadSpotify m => Text -> m Album
+getAlbum = marketFromToken $ inSpot .: client' @(
+    QueryParam' '[Required] "market" Market :> "albums" :> Capture "id" Text :> GetS Album )
+
+getAlbumTracks :: MonadSpotify m => Text -> m (Paging TrackSimplified)
+getAlbumTracks = inSpot . client' @("albums" :> Capture "id" Text :> "tracks" :> GetS (Paging TrackSimplified))
+
+
+{- Library -}
 
 --TODO query params
 getSavedTracks :: MonadSpotify m => m (Paging SavedTrack)
-getSavedTracks = c0 $ Proxy @("me" :> "tracks" :> A 'GET (Paging SavedTrack))
+getSavedTracks = inSpot $ client' @("me" :> "tracks" :> GetS (Paging SavedTrack))
 
---TODO we have to manually pass in our own username here, even though we seemingly never have permission to add a playlist for someone else
+removeAlbums :: MonadSpotify f => [Text] -> f ()
+removeAlbums = fmap noContent . inSpot . client' @("me" :> "albums" :> BodyS [Text] :> DeleteS NoContent)
+
+removeTracks :: MonadSpotify f => [Text] -> f ()
+removeTracks = fmap noContent . inSpot . client' @("me" :> "tracks" :> BodyS [Text] :> DeleteS NoContent)
+
+--TODO fails silently - even through Spotify Web Console
+--TODO take a NonEmpty? and for similar endpoints
+saveTracks :: MonadSpotify f => [Text] -> f ()
+saveTracks = fmap noContent . inSpot . client' @("me" :> "tracks" :> BodyS [Text] :> DeleteS NoContent)
+
+
+{- Playlists -}
+
+--TODO this requires the "spotify:track:" prefix, which seems inconsistent with everything else...
+addToPlaylist :: MonadSpotify f => [Text] -> Maybe Int -> Text -> f Text
+addToPlaylist = jFunc $ fmap (tuple1 . jRes) . inSpot .: client' @(
+    BodyS (JRes '[ '("uris", [Text]), '("position", Maybe Int)]) :>
+    "playlists" :> Capture "playlist_id" Text :> "tracks" :>
+    PostS (JRes '[ '("snapshot_id", Text)]) )
+
+--TODO we have to manually pass in our own username here,
+        -- even though we seemingly never have permission to add a playlist for someone else
     -- store username in Reader env?
 --TODO non-simple playlist doesn't seem to exist
-createPlaylist :: MonadSpotify m => Text -> Text -> Bool -> Bool -> Text -> m PlaylistSimplified
-createPlaylist = c5' jFunc identity $
-    Proxy @("users" :> Capture "user_id" Text :> "playlists" :>
-        B (JRes '[ '("name", Text), '("public", Bool), '("collaborative", Bool), '("description", Text) ]) :>
-        A 'POST PlaylistSimplified)
+createPlaylist :: MonadSpotify m => Text -> Bool -> Bool -> Text -> Text -> m PlaylistSimplified
+createPlaylist = jFunc $ inSpot .: client' @(
+    BodyS (JRes '[ '("name", Text), '("public", Bool), '("collaborative", Bool), '("description", Text) ]) :>
+    "users" :> Capture "user_id" Text :> "playlists" :>
+    PostS PlaylistSimplified )
 
---TODO int should be maybed
-addToPlaylist :: MonadSpotify f => Text -> [Text] -> Int -> f Text
-addToPlaylist = c3' jFunc j1 $ Proxy @("playlists" :> Capture "playlist_id" Text :> "tracks" :> B (JRes '[ '("uris", [Text]), '("position", Int) ]) :> A 'POST (JRes '[ '("snapshot_id", Text)]))
 
---TODO what does the label "id" actually do?
-getAlbum :: MonadSpotify m => Text -> m Album
-getAlbum = c1 $ Proxy @("albums" :> Capture "id" Text :> A 'GET Album)
-
-getAlbumTracks :: MonadSpotify m => Text -> m (Paging TrackSimplified)
-getAlbumTracks = c1 $ Proxy @("albums" :> Capture "id" Text :> "tracks" :> A 'GET (Paging TrackSimplified))
-
-getUser :: MonadSpotify m => Text -> m UserPublic
-getUser = c1 $ Proxy @("users" :> Capture "user_id" Text :> A 'GET UserPublic)
-
-getMe :: MonadSpotify m => m UserPublic
-getMe = c0 $ Proxy @("me" :> A 'GET UserPublic)
+{- Tracks -}
 
 getTrack :: MonadSpotify m => Text -> m Track
-getTrack = c1 $ Proxy @("tracks" :> Capture "id" Text :> A 'GET Track)
+getTrack = inSpot . client' @("tracks" :> Capture "id" Text :> GetS Track)
+
+
+{- Users -}
+
+getMe :: MonadSpotify m => m UserPublic
+getMe = inSpot $ client' @("me" :> GetS UserPublic)
+
+getUser :: MonadSpotify m => Text -> m UserPublic
+getUser = inSpot . client' @("users" :> Capture "user_id" Text :> GetS UserPublic)
+
+
+{- Auth -}
 
 type AuthAPI = "token" :> ReqBody '[FormUrlEncoded] [(Text, Text)] :> AuthHeaderBasic :> Post '[JSON] TokenResponse
 
@@ -335,7 +319,7 @@ inSpot x = do
         expiry = \case
             FailureResponse _ resp ->
                 if statusCode (responseStatusCode resp) == 401 then do
-                    Error{message} <- liftEitherSpot $ bimap mkError error $ eitherDecode $ responseBody resp
+                    Error{message} <- liftEitherSpot $ bimap mkError error $ JSON.eitherDecode $ responseBody resp
                     if message == "The access token expired" then return True
                     else no
                 else no
@@ -346,16 +330,13 @@ inSpot x = do
 liftEitherSpot :: MonadSpotify m => Either ClientError a -> m a
 liftEitherSpot = either throwClientError return
 
-requestToken :: Auth -> ClientM TokenResponse
-requestToken (Auth (RefreshToken t) i s) = client (Proxy @AuthAPI)
-    [ ("grant_type", "refresh_token"), ("refresh_token", t) ]
-    (IdAndSecret i s)
-
-newTokenIO :: Auth -> Manager -> IO (Either ClientError Token)
-newTokenIO a m = Token . accessToken <<$>> runClientM (requestToken a) (mkClientEnv m accountsBase)
-
 newToken :: MonadSpotify m => m Token
 newToken = liftEitherSpot =<< liftIO =<< (newTokenIO <$> getAuth <*> getManager)
+  where
+    requestToken (Auth (RefreshToken t) i s) = client (Proxy @AuthAPI)
+        [ ("grant_type", "refresh_token"), ("refresh_token", t) ]
+        (IdAndSecret i s)
+    newTokenIO a m = Token . accessToken <<$>> runClientM (requestToken a) (mkClientEnv m accountsBase)
 
 
 {- Util -}
@@ -377,26 +358,6 @@ catchErrorBool :: MonadError e m => (e -> m Bool) -> m a -> (e -> m a) -> m a
 catchErrorBool f x h = catchError x $ \e -> do
     b <- f e
     if b then h e else throwError e
-
-(.:) :: (b -> c) -> (a1 -> a2 -> b) -> a1 -> a2 -> c
-(.:) = (.) . (.)
-
-(.:.) :: (b -> c) -> (a1 -> a2 -> a -> b) -> a1 -> a2 -> a -> c
-(.:.) = (.:) . (.)
-
-(.::) :: (b -> c)
-           -> (a1 -> a2 -> a4 -> a5 -> b) -> a1 -> a2 -> a4 -> a5 -> c
-(.::) = (.:.) . (.)
-
-(.::.) :: (b -> c)
-            -> (a1 -> a2 -> a4 -> a5 -> a -> b)
-            -> a1
-            -> a2
-            -> a4
-            -> a5
-            -> a
-            -> c
-(.::.) = (.::) . (.)
 
 --TODO wait for 'NoRecordSelectorFunctions' (and 'RecordDotSyntax') to avoid name clashes
 identity :: a -> a
