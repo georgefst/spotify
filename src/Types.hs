@@ -27,7 +27,7 @@ import Type.Reflection
 data Album = Album
     { albumType :: AlbumType
     , artists    :: [ArtistSimplified]
-    , availableMarkets :: [Text]
+    , availableMarkets :: Maybe [Text]
     , copyrights :: [Copyright]
     , externalIds :: ExternalID
     , externalUrls :: ExternalURL
