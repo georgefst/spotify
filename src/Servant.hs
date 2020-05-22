@@ -49,7 +49,7 @@ import GHC.Generics (Generic)
 import Types --TODO special naming for fields that clash with prelude? eg. 'id'
 
 
-{- The Spotify monad -}
+{- The Spotify monad, and MonadSpotify type class -}
 
 --TODO do we really want to expose ClientError directly?
     -- pros
@@ -115,15 +115,15 @@ runSpotify mm mt a x = do
         rdr = runStateT (unSpot x) =<< maybe getTok return mt
     runExceptT $ runReaderT rdr (a, man)
 
+
+{- Exposed types -}
+
 -- client authorization data
 data Auth = Auth
     { refreshToken :: RefreshToken
     , clientId :: ClientId
     , clientSecret :: ClientSecret
     }
-
-
-{- Exposed types -}
 
 newtype RefreshToken = RefreshToken Text
     deriving (Eq,Ord,Show)

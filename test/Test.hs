@@ -15,15 +15,17 @@ import Data.Functor ((<&>))
 import Types
 import Servant
 
---TODO clean up (e.g. delete playlist)
---TODO run concurrently where possible
---TODO actually check for changes (e.g. query playlist after adding)
---TODO check expected results?
---TODO check that objects don't contain any fields that we ignore (except 'type')
-    -- we could also check that 'type' is what we expect
-        -- we could even just include 'type' in the objects - it doesn't do any harm
---TODO check results directly in IO as well
---TODO split each chunk (albums, playlists...) in to a separate test case
+{-
+TODO
+run concurrently where possible
+actually check for changes (e.g. query playlist after adding)
+check expected results?
+check that objects don't contain any fields that we ignore (except 'type')
+    we could also check that 'type' is what we expect
+        we could even just include 'type' in the objects - it doesn't do any harm
+check results directly in IO as well
+split each chunk (albums, playlists...) in to a separate test case
+-}
 
 tests :: IO [Test]
 tests = do
