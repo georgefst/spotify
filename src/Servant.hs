@@ -146,7 +146,6 @@ instance ToHttpApiData IdAndSecret where
     toUrlPiece (IdAndSecret (ClientId i) (ClientSecret s)) =
         toUrlPiece . ("Basic " <>) . T.decodeUtf8 . SF.encode $ i <> ":" <> s
 
---TODO do we want Strict?
 type AuthHeader = Header' '[Strict,Required] "Authorization" Token
 
 type AuthHeaderBasic = Header' '[Strict,Required] "Authorization" IdAndSecret
@@ -200,8 +199,8 @@ instance JMap js => ToJSON (JRes js) where
 
 newtype Market = Market Text
     deriving newtype ToHttpApiData
-marketFromToken :: (Market -> b) -> b
-marketFromToken = ($ Market "from_token")
+marketFromToken :: (Maybe Market -> b) -> b
+marketFromToken = ($ Just $ Market "from_token")
 
 
 {- Stuff that makes writing all the bindings less tedious, but that I might remove in the long run -}
@@ -229,7 +228,7 @@ tuple1 (a,()) = a
 -- getAlbum :: MonadSpotify m => Text -> Text -> m Album
 getAlbum :: MonadSpotify m => Text -> m Album
 getAlbum = marketFromToken $ inSpot .: client' @(
-    QueryParam' '[Required] "market" Market :> "albums" :> Capture "id" Text :> GetS Album )
+    QueryParam "market" Market :> "albums" :> Capture "id" Text :> GetS Album )
 
 getAlbumTracks :: MonadSpotify m => Text -> m (Paging TrackSimplified)
 getAlbumTracks = inSpot . client' @("albums" :> Capture "id" Text :> "tracks" :> GetS (Paging TrackSimplified))
