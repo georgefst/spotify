@@ -107,6 +107,14 @@ instance MonadSpotify Spotify where
     putToken = put
     throwClientError = throwError
 
+--TODO does 'runClientM' guarantee that no other types of exception are thrown?
+runSpotify :: Maybe Manager -> Maybe Token -> Auth -> Spotify a -> IO (Either ClientError (a, Token))
+runSpotify mm mt a x = do
+    man <- maybe (newManager tlsManagerSettings) return mm
+    let getTok = liftEither =<< liftIO (newTokenIO a man)
+        rdr = runStateT (unSpot x) =<< maybe getTok return mt
+    runExceptT $ runReaderT rdr (a, man)
+
 -- client authorization data
 data Auth = Auth
     { refreshToken :: RefreshToken
@@ -190,10 +198,6 @@ instance JMap js => FromJSON (JRes js) where
 instance JMap js => ToJSON (JRes js) where
     toJSON = JSON.Object . H.fromList . toJSON'
 
---TODO we really ought to newtype this, seeing as comma separation isn't standard (also an orphan)
-instance ToHttpApiData a => ToHttpApiData [a] where
-    toQueryParam = T.intercalate "," . map toQueryParam
-
 newtype Market = Market Text
     deriving newtype ToHttpApiData
 marketFromToken :: (Market -> b) -> b
@@ -251,12 +255,16 @@ saveTracks = fmap noContent . inSpot . client' @("me" :> "tracks" :> BodyS [Text
 
 {- Playlists -}
 
---TODO this requires the "spotify:track:" prefix, which seems inconsistent with everything else...
+--TODO don't export directly
 addToPlaylist :: MonadSpotify f => [Text] -> Maybe Int -> Text -> f Text
 addToPlaylist = jFunc $ fmap (tuple1 . jRes) . inSpot .: client' @(
     BodyS (JRes '[ '("uris", [Text]), '("position", Maybe Int)]) :>
     "playlists" :> Capture "playlist_id" Text :> "tracks" :>
     PostS (JRes '[ '("snapshot_id", Text)]) )
+addTrackToPlaylist :: MonadSpotify f => [Text] -> Maybe Int -> Text -> f Text
+addTrackToPlaylist = addToPlaylist . map ("spotify:track:" <>)
+addEpisodeToPlaylist :: MonadSpotify f => [Text] -> Maybe Int -> Text -> f Text
+addEpisodeToPlaylist = addToPlaylist . map ("spotify:episode:" <>)
 
 --TODO we have to manually pass in our own username here,
         -- even though we seemingly never have permission to add a playlist for someone else
@@ -332,11 +340,13 @@ liftEitherSpot = either throwClientError return
 
 newToken :: MonadSpotify m => m Token
 newToken = liftEitherSpot =<< liftIO =<< (newTokenIO <$> getAuth <*> getManager)
+
+newTokenIO :: Auth -> Manager -> IO (Either ClientError Token)
+newTokenIO a m = Token . accessToken <<$>> runClientM (requestToken a) (mkClientEnv m accountsBase)
   where
     requestToken (Auth (RefreshToken t) i s) = client (Proxy @AuthAPI)
         [ ("grant_type", "refresh_token"), ("refresh_token", t) ]
         (IdAndSecret i s)
-    newTokenIO a m = Token . accessToken <<$>> runClientM (requestToken a) (mkClientEnv m accountsBase)
 
 
 {- Util -}

@@ -1,3 +1,7 @@
 cradle:
   cabal:
-    component: "spotify"
+    - path: ./src
+      component: "spotify:lib:spotify"
+
+    - path: ./test
+      component: "spotify:test:tests"

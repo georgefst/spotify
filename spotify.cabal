@@ -18,16 +18,7 @@ source-repository head
     type: git
     location: git://github.com/georgefst/spotify.git
 
-library
-    exposed-modules:
-        Types
-        Servant
-    hs-source-dirs: src
-    ghc-options:
-        -Wall
-
-        --TODO remove before releasing
-        -Wno-unused-imports
+common common
     build-depends:
         base >= 4.12 && < 5,
         aeson,
@@ -79,3 +70,25 @@ library
         TypeOperators
     other-extensions:
         AllowAmbiguousTypes
+    ghc-options:
+        -Wall
+
+        --TODO remove before releasing
+        -Wno-unused-imports
+        -threaded
+
+library
+    import: common
+    exposed-modules:
+        Types
+        Servant
+    hs-source-dirs: src
+
+test-suite tests
+    import: common
+    type: detailed-0.9
+    test-module: Test
+    hs-source-dirs: test
+    build-depends:
+        Cabal,
+        spotify,
