@@ -234,6 +234,7 @@ getAlbum = marketFromToken $ inSpot .: client' @(
 getAlbumTracks :: MonadSpotify m => Text -> m (Paging TrackSimplified)
 getAlbumTracks = inSpot . client' @("albums" :> Capture "id" Text :> "tracks" :> GetS (Paging TrackSimplified))
 
+
 {- Follow -}
 
 -- note that Spotify has no notion of actually 'deleting' a playlist - this is closest
