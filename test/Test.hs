@@ -6,6 +6,7 @@ import Control.Monad
 import Data.Char
 import Data.Composition
 import Distribution.TestSuite
+import Lens.Micro.Extras
 import Text.Pretty.Simple
 
 import qualified Data.Text.IO as T
@@ -53,8 +54,7 @@ runAll = do
     --TODO doesn't necessarily clean up fully if user has more than 50 playlists -
         -- to be revisited when we handle 'Paging' better
     Paging{items} <- getMyPlaylists (Just 50) Nothing
-    forM_ (filter (\PlaylistSimplified{name} -> name == playlistName) items) $ \PlaylistSimplified{id = id'} ->
-        unfollowPlaylist id'
+    forM_ (filter ((== playlistName) . view #name) items) $ unfollowPlaylist . view #id
     PlaylistSimplified{id = playlistId} <- createPlaylist playlistName False False "a description" me
     addTrackToPlaylist [track3,track4,track5] Nothing playlistId
     addEpisodeToPlaylist [podEpisode1] (Just 1) playlistId
