@@ -50,7 +50,12 @@ runAll = do
     removeTracks [track1, track2]
     saveTracks [track1, track2]
 
-    PlaylistSimplified{id = playlistId} <- createPlaylist "Haskell test playlist" False False "a description" me
+    --TODO doesn't necessarily clean up fully if user has more than 50 playlists -
+        -- to be revisited when we handle 'Paging' better
+    Paging{items} <- getMyPlaylists (Just 50) Nothing
+    forM_ (filter (\PlaylistSimplified{name} -> name == playlistName) items) $ \PlaylistSimplified{id = id'} ->
+        unfollowPlaylist id'
+    PlaylistSimplified{id = playlistId} <- createPlaylist playlistName False False "a description" me
     addTrackToPlaylist [track3,track4,track5] Nothing playlistId
     addEpisodeToPlaylist [podEpisode1] (Just 1) playlistId
 
@@ -67,3 +72,4 @@ runAll = do
     track4 = "1Qr6phLmzW5Z4k3ggATKh5" -- DSN
     track5 = "2twka2Q4vhCaBMJgtcqLR1" -- CHC
     podEpisode1 = "2T8XOBBkTrqtw8ikXFB2eM" -- Parched
+    playlistName = "Haskell test playlist"

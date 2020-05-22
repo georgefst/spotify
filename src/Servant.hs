@@ -234,6 +234,13 @@ getAlbum = marketFromToken $ inSpot .: client' @(
 getAlbumTracks :: MonadSpotify m => Text -> m (Paging TrackSimplified)
 getAlbumTracks = inSpot . client' @("albums" :> Capture "id" Text :> "tracks" :> GetS (Paging TrackSimplified))
 
+{- Follow -}
+
+-- note that Spotify has no notion of actually 'deleting' a playlist - this is closest
+unfollowPlaylist :: MonadSpotify m => Text -> m NoContent
+unfollowPlaylist = inSpot . client' @(
+    "playlists" :> Capture "playlist_id" Text :> "followers" :> DeleteS NoContent )
+
 
 {- Library -}
 
@@ -275,6 +282,12 @@ createPlaylist = jFunc $ inSpot .: client' @(
     BodyS (JRes '[ '("name", Text), '("public", Bool), '("collaborative", Bool), '("description", Text) ]) :>
     "users" :> Capture "user_id" Text :> "playlists" :>
     PostS PlaylistSimplified )
+
+getMyPlaylists :: MonadSpotify m => Maybe Int -> Maybe Int -> m (Paging PlaylistSimplified)
+getMyPlaylists = inSpot .: client' @(
+    "me" :> "playlists" :>
+    QueryParam "limit" Int :> QueryParam "offset" Int :>
+    GetS (Paging PlaylistSimplified) )
 
 
 {- Tracks -}
