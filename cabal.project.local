@@ -1,0 +1,4 @@
+allow-newer:
+    servant:base, servant:template-haskell
+    servant-client:base, servant-client:template-haskell
+    servant-client-core:base, servant-client-core:template-haskell
