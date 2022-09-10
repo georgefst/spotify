@@ -45,6 +45,8 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 import GHC.Generics (Generic)
+import qualified Data.Aeson.KeyMap as KM
+import Data.Aeson.Key (fromString)
 
 import Types --TODO special naming for fields that clash with prelude? eg. 'id'
 
@@ -160,7 +162,7 @@ type family MapSnd (js :: [(k1,k2)]) :: [k2] where
     MapSnd '[] = '[]
     MapSnd ('(_,j) : js) = j : MapSnd js
 
-type family JT (js :: [*]) where
+type family JT (js :: [Type]) where
     JT '[] = ()
     JT (j : js) = (j, JT js)
 
@@ -170,7 +172,7 @@ class JMap (js :: [(Symbol, Type)]) where
     parseJSON' :: JSON.Object -> Parser (JRes js)
     type JFunc js r
     jFunc :: (JRes js -> r) -> JFunc js r
-    toJSON' :: JRes js -> [(Text, JSON.Value)]
+    toJSON' :: JRes js -> [(KM.Key, JSON.Value)]
 instance JMap '[] where
     data JRes '[] = J0
     type JFunc '[] r = r
@@ -181,10 +183,10 @@ instance JMap '[] where
 instance (JMap js, KnownSymbol s, FromJSON a, ToJSON a) => JMap ('(s,a) : js) where
     data JRes ('(s,a) : js) = Jn a (JRes js)
     parseJSON' o = do
-        x <- maybe (fail $ "key not found in JSON object: " ++ sym) return (H.lookup (T.pack sym) o)
+        x <- maybe (fail $ "key not found in JSON object: " ++ sym) return (KM.lookup (fromString sym) o)
         Jn <$> parseJSON x <*> parseJSON' o
         where sym = symbolVal $ Proxy @s
-    toJSON' (Jn x xs) = (T.pack $ symbolVal $ Proxy @s, toJSON x) : toJSON' xs
+    toJSON' (Jn x xs) = (fromString $ symbolVal $ Proxy @s, toJSON x) : toJSON' xs
     jRes (Jn x xs) = (x, jRes xs)
     type JFunc ('(s,a) : js) r = a -> JFunc js r
     jFunc f y = jFunc $ f . Jn y
@@ -195,7 +197,7 @@ instance JMap js => FromJSON (JRes js) where
         v -> fail $ "JSON is not an object: " ++ show v
 
 instance JMap js => ToJSON (JRes js) where
-    toJSON = JSON.Object . H.fromList . toJSON'
+    toJSON = JSON.Object . KM.fromList . toJSON'
 
 newtype Market = Market Text
     deriving newtype ToHttpApiData

@@ -20,7 +20,7 @@ source-repository head
 
 common common
     build-depends:
-        base >= 4.12 && < 5,
+        base >= 4.16,
         aeson,
         base64-bytestring,
         bytestring,

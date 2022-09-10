@@ -1,11 +1,13 @@
 -- | [All spotify objects](https://developer.spotify.com/documentation/web-api/reference/object-model/)
 
 {-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use newtype instead of data" #-}
 
 module Types where --TODO rename to Objects?
 
-import Data.Aeson hiding (Error)
-import Data.Aeson.Types hiding (Error)
+import Data.Aeson hiding (Key, Error)
+import Data.Aeson.Types hiding (Key, Error)
 import Data.Char
 import Data.Functor.Identity
 import Data.Text (Text)
@@ -336,7 +338,7 @@ data TokenResponse = TokenResponse
 -- It might be worth reporting this as an issue to the developers of the API.
 data NewReleasesResponse = NewReleasesResponse
     { message :: Maybe Text
-    , message :: Paging AlbumSimplified
+    -- , message :: Paging AlbumSimplified
 }   deriving (Eq, Ord, Show, Generic)
     deriving FromJSON via Record NewReleasesResponse
 
