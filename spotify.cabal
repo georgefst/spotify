@@ -3,7 +3,7 @@ name:               spotify
 version:            0.1.0.0
 author:             George Thomas
 maintainer:         George Thomas
-description:        Haskell interface for interacting with the Spotify Web API
+description:        Bindings for interacting with the Spotify Web API
 synopsis:           Spotify Web API
 homepage:           https://github.com/georgefst/spotify
 license:            BSD-3-Clause
@@ -21,68 +21,81 @@ source-repository head
 common common
     build-depends:
         base >= 4.16,
-        aeson,
-        base64-bytestring,
-        bytestring,
-        composition,
-        containers,
-        directory,
-        filepath,
-        http-client-tls,
-        http-client,
-        http-types,
-        mtl,
-        servant-client,
-        servant,
-        text,
-        time,
-        transformers,
-        unordered-containers,
-
-        --TODO consider removing
-        generic-lens,
-        microlens,
-        pretty-simple
-    default-language: Haskell2010
+        aeson ^>= 2.1.0,
+        base64-bytestring ^>= 1.2.1,
+        bytestring ^>= 0.11.3,
+        composition ^>= 1.0.2,
+        containers ^>= 0.6.5,
+        directory ^>= 1.3.6,
+        filepath ^>= 1.4.2,
+        http-client ^>= 0.7.13,
+        http-client-tls ^>= 0.3.6,
+        http-types ^>= 0.12.3,
+        mtl ^>= 2.2.2,
+        servant ^>= 0.19,
+        servant-client ^>= 0.19,
+        text ^>= 1.2.5,
+        time ^>= 1.11.1,
+        transformers ^>= 0.5.6,
+        unordered-containers ^>= 0.2.19,
+    default-language: GHC2021
     default-extensions:
+        AllowAmbiguousTypes
+        BlockArguments
         DataKinds
         DeriveAnyClass
-        DeriveGeneric
         DerivingStrategies
         DerivingVia
         DuplicateRecordFields
-        FlexibleContexts
-        FlexibleInstances
-        GeneralizedNewtypeDeriving
+        ExplicitNamespaces
         LambdaCase
-        MultiParamTypeClasses
-        NamedFieldPuns
+        NoFieldSelectors
+        NoMonomorphismRestriction
         OverloadedLabels
-        OverloadedStrings
+        OverloadedRecordDot
         PartialTypeSignatures
-        PolyKinds
-        RankNTypes
         RecordWildCards
-        ScopedTypeVariables
-        TupleSections
-        TypeApplications
-        TypeFamilies
-        TypeOperators
-    other-extensions:
-        AllowAmbiguousTypes
     ghc-options:
         -Wall
-
-        --TODO remove before releasing
-        -Wno-unused-imports
         -threaded
+
+library spotify-types
+    import: common
+    hs-source-dirs: types
+    exposed-modules:
+        Spotify.Types.Albums
+        Spotify.Types.Artists
+        Spotify.Types.Tracks
+        Spotify.Types.Users
+        Spotify.Types.Categories
+        Spotify.Types.Simple
+        Spotify.Types.Misc
+        Spotify.Types.Auth
+        Spotify.Types.Internal.CustomJSON
+        Spotify.Types.Internal.EnumJSON
+
+library spotify-servant
+    import: common
+    hs-source-dirs: servant
+    exposed-modules:
+        Spotify.Servant.Core
+        Spotify.Servant.Albums
+        Spotify.Servant.Artists
+        Spotify.Servant.Tracks
+        Spotify.Servant.Users
+        Spotify.Servant.Playlists
+        Spotify.Servant.Categories
+    build-depends:
+        spotify-types,
 
 library
     import: common
+    hs-source-dirs: lib
     exposed-modules:
-        Types
-        Servant
-    hs-source-dirs: src
+        Spotify
+    build-depends:
+        spotify-types,
+        spotify-servant,
 
 test-suite tests
     import: common
@@ -90,5 +103,7 @@ test-suite tests
     test-module: Test
     hs-source-dirs: test
     build-depends:
-        Cabal,
         spotify,
+        spotify-types,
+        spotify-servant,
+        Cabal,
