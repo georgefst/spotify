@@ -53,7 +53,7 @@ runAll = do
                 , description = "a description"
                 }
     addToPlaylist playlistId Nothing $
-        map toURI [track3 :: TrackID , track4, track5]
+        map toURI [track3 :: TrackID, track4, track5]
             <> map toURI [podEpisode1 :: EpisodeID]
 
     getTrack track1
