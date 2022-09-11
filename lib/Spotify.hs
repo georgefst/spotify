@@ -175,7 +175,7 @@ newTokenIO :: Auth -> Manager -> IO (Either ClientError TokenResponse)
 newTokenIO a m = runClientM (requestToken a) (mkClientEnv m accountsBase)
   where
     requestToken (Auth t i s) =
-        cli @Authorization
+        cli @RefreshAccessToken
             t
             (IdAndSecret i s)
 

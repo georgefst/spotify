@@ -23,7 +23,7 @@ import Servant.API (
  )
 import Web.FormUrlEncoded (Form (Form), ToForm (toForm))
 
-type Authorization =
+type RefreshAccessToken =
     "token"
         :> ReqBody '[FormUrlEncoded] RefreshToken
         :> Header' '[Strict, Required] "Authorization" IdAndSecret
