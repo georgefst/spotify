@@ -98,7 +98,7 @@ data TrackLink = TrackLink
     { externalUrls :: ExternalURL
     , href :: Href
     , id :: TrackID
-    , url :: Text
+    , url :: Maybe Text
     }
     deriving (Eq, Ord, Show, Generic)
     deriving (FromJSON) via CustomJSON TrackLink
