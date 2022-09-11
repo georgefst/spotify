@@ -132,15 +132,13 @@ data Product
     deriving (FromJSON) via CustomJSON Product
 
 newtype Market = Market {unwrap :: Text}
-    deriving newtype (Eq, Ord, ToHttpApiData, IsString)
+    deriving newtype (Eq, Ord, Show, ToHttpApiData, IsString)
 
 newtype Genre = Genre {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, IsString)
 
 newtype Href = Href {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, IsString)
 
 class ToURI a where
     toURI :: a -> URI
