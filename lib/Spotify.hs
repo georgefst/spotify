@@ -20,6 +20,7 @@ import Control.Applicative ((<|>))
 import Control.Exception (throwIO)
 import Control.Monad.Except (ExceptT, MonadError, liftEither, runExceptT, throwError)
 import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.Loops (unfoldrM)
 import Control.Monad.Reader (MonadReader, ReaderT, asks, runReaderT)
 import Control.Monad.State (MonadState, StateT, get, put, runStateT)
 import Data.Aeson (FromJSON, eitherDecode)
@@ -215,3 +216,16 @@ createPlaylist u opts = inSpot $ cli @CreatePlaylist u opts
 
 getCategories :: MonadSpotify m => CategoryID -> Maybe Country -> Maybe Locale -> m Category
 getCategories = inSpot .:. cli @GetCategories
+
+-- higher-level wrappers around main API
+allPages :: Monad m => Maybe (Paging a -> m ()) -> (PagingParams -> m (Paging a)) -> m [a]
+allPages logger x =
+    concat <$> flip unfoldrM (0, Nothing) \(i, n) -> do
+        if maybe True (i <) n
+            then do
+                p <- x $ PagingParams{limit = Just limit, offset = Just i}
+                maybe (pure ()) ($ p) logger
+                pure $ Just (p.items, (i + limit, Just p.total))
+            else pure Nothing
+  where
+    limit = 50 -- API docs say this is the max
