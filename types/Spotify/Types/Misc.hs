@@ -148,51 +148,39 @@ newtype URIPrefix (s :: Symbol) a = URIPrefix a
 instance (KnownSymbol s, HasField "unwrap" a Text) => ToURI (URIPrefix s a) where
     toURI (URIPrefix x) = URI $ "spotify:" <> T.pack (symbolVal (Proxy @s)) <> ":" <> x.unwrap
 newtype AlbumID = AlbumID {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
     deriving (ToURI) via URIPrefix "album" AlbumID
 newtype ArtistID = ArtistID {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
     deriving (ToURI) via URIPrefix "artist" ArtistID
 newtype EpisodeID = EpisodeID {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
     deriving (ToURI) via URIPrefix "episode" EpisodeID
 newtype TrackID = TrackID {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
     deriving (ToURI) via URIPrefix "track" TrackID
 newtype UserID = UserID {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
     deriving (ToURI) via URIPrefix "user" UserID
 newtype PlaylistID = PlaylistID {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
     deriving (ToURI) via URIPrefix "playlist" PlaylistID
 newtype CategoryID = CategoryID {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
 newtype SnapshotID = SnapshotID {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
 
 newtype URL = URL {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, IsString)
 
 newtype URI = URI {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, IsString)
 
 newtype Country = Country {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
 
 newtype Locale = Locale {unwrap :: Text}
-    deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
 
 newtype HTTPError = HTTPError {unwrap :: Int}
     deriving (Show)
