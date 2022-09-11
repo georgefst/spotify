@@ -146,6 +146,7 @@ data Auth = Auth
     , clientId :: ClientId
     , clientSecret :: ClientSecret
     }
+    deriving (Show)
 
 mainBase, accountsBase :: BaseUrl
 mainBase = BaseUrl Http "api.spotify.com" 80 "v1"
