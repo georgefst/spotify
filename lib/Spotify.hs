@@ -176,7 +176,7 @@ newTokenIO a m = runClientM (requestToken a) (mkClientEnv m accountsBase)
   where
     requestToken (Auth t i s) =
         cli @RefreshAccessToken
-            t
+            (RefreshAccessTokenForm t)
             (IdAndSecret i s)
 
 getAlbum :: MonadSpotify m => AlbumID -> m Album
