@@ -3,7 +3,7 @@ module Spotify.Servant.Albums where
 import Spotify.Servant.Core
 import Spotify.Types.Albums
 import Spotify.Types.Misc
-import Spotify.Types.Simple qualified as Simple
+import Spotify.Types.Simple
 
 import Servant.API (
     Capture,
@@ -23,7 +23,7 @@ type GetAlbumTracks =
         :> Capture "id" ID
         :> "tracks"
         :> QueryParam "market" Market
-        :> SpotPaging Simple.Track
+        :> SpotPaging TrackSimple
 
 type RemoveAlbums =
     "me"

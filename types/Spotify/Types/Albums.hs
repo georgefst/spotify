@@ -2,7 +2,7 @@ module Spotify.Types.Albums where
 
 import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Misc
-import Spotify.Types.Simple qualified as Simple
+import Spotify.Types.Simple
 
 import Data.Aeson (FromJSON)
 import Data.Text (Text)
@@ -10,7 +10,7 @@ import GHC.Generics (Generic)
 
 data Album = Album
     { albumType :: AlbumType
-    , artists :: [Simple.Artist]
+    , artists :: [ArtistSimple]
     , availableMarkets :: Maybe [Text]
     , copyrights :: [Copyright]
     , externalIds :: ExternalID
@@ -25,7 +25,7 @@ data Album = Album
     , releaseDate :: Text
     , releaseDatePrecision :: DatePrecision
     , restrictions :: Maybe Restrictions
-    , tracks :: Paging Simple.Track
+    , tracks :: Paging TrackSimple
     , uri :: URI
     }
     deriving (Eq, Ord, Show, Generic)

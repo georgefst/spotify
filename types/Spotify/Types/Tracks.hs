@@ -3,15 +3,15 @@ module Spotify.Types.Tracks where
 import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Internal.EnumJSON
 import Spotify.Types.Misc
-import Spotify.Types.Simple qualified as Simple
+import Spotify.Types.Simple
 
 import Data.Aeson (FromJSON)
 import Data.Text (Text)
 import GHC.Generics (Generic)
 
 data Track = Track
-    { album :: Simple.Album
-    , artists :: [Simple.Artist]
+    { album :: AlbumSimple
+    , artists :: [ArtistSimple]
     , availableMarkets :: Maybe [Text]
     , discNumber :: Int
     , durationMs :: Int

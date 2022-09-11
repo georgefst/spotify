@@ -3,7 +3,7 @@ module Spotify.Servant.Playlists where
 import Spotify.Servant.Core
 import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Misc
-import Spotify.Types.Simple qualified as Simple
+import Spotify.Types.Simple
 
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Text (Text)
@@ -34,14 +34,14 @@ newtype AddToPlaylistResponse = AddToPlaylistResponse
 type GetMyPlaylists =
     "me"
         :> "playlists"
-        :> SpotPaging Simple.Playlist
+        :> SpotPaging PlaylistSimple
 
 type CreatePlaylist =
     "users"
         :> Capture "user_id" ID
         :> "playlists"
         :> SpotBody CreatePlaylistOpts
-        :> SpotPostCreated Simple.Playlist
+        :> SpotPostCreated PlaylistSimple
 data CreatePlaylistOpts = CreatePlaylistOpts
     { name :: Text
     , public :: Bool

@@ -5,7 +5,7 @@ module Test (tests) where
 import Spotify
 import Spotify.Servant.Playlists
 import Spotify.Types.Misc
-import Spotify.Types.Simple qualified as Simple
+import Spotify.Types.Simple
 import Spotify.Types.Users
 
 import Control.Monad
@@ -43,7 +43,7 @@ runAll = do
 
     Paging{items} <- getMyPlaylists $ PagingParams{limit = Just 50, offset = Nothing}
     forM_ (filter ((== playlistName) . (.name)) items) $ unfollowPlaylist . (.id)
-    Simple.Playlist{id = playlistId} <-
+    PlaylistSimple{id = playlistId} <-
         createPlaylist
             me
             CreatePlaylistOpts

@@ -12,7 +12,7 @@ import Spotify.Types.Artists
 import Spotify.Types.Auth
 import Spotify.Types.Categories
 import Spotify.Types.Misc
-import Spotify.Types.Simple qualified as Simple
+import Spotify.Types.Simple
 import Spotify.Types.Tracks
 import Spotify.Types.Users
 
@@ -182,7 +182,7 @@ newTokenIO a m = runClientM (requestToken a) (mkClientEnv m accountsBase)
 
 getAlbum :: MonadSpotify m => ID -> m Album
 getAlbum a = inSpot $ cli @GetAlbum a marketFromToken
-getAlbumTracks :: MonadSpotify m => ID -> PagingParams -> m (Paging Simple.Track)
+getAlbumTracks :: MonadSpotify m => ID -> PagingParams -> m (Paging TrackSimple)
 getAlbumTracks a pps = inSpot $ withPagingParams pps $ cli @GetAlbumTracks a marketFromToken
 removeAlbums :: MonadSpotify m => [ID] -> m ()
 removeAlbums = noContent . inSpot . cli @RemoveAlbums
@@ -208,10 +208,10 @@ unfollowPlaylist = noContent . inSpot . cli @UnfollowPlaylist
 
 addToPlaylist :: MonadSpotify m => ID -> Maybe Int -> [URI] -> m Text
 addToPlaylist p position uris = fmap coerce $ inSpot $ cli @AddToPlaylist p AddToPlaylistBody{..}
-getMyPlaylists :: MonadSpotify m => PagingParams -> m (Paging Simple.Playlist)
+getMyPlaylists :: MonadSpotify m => PagingParams -> m (Paging PlaylistSimple)
 getMyPlaylists pps = inSpot $ withPagingParams pps $ cli @GetMyPlaylists
 
-createPlaylist :: MonadSpotify m => ID -> CreatePlaylistOpts -> m Simple.Playlist
+createPlaylist :: MonadSpotify m => ID -> CreatePlaylistOpts -> m PlaylistSimple
 createPlaylist u opts = inSpot $ cli @CreatePlaylist u opts
 
 getCategories :: MonadSpotify m => ID -> Maybe Country -> Maybe Locale -> m Category

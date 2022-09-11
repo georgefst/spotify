@@ -7,7 +7,7 @@ import Data.Aeson (FromJSON)
 import Data.Text (Text)
 import GHC.Generics (Generic)
 
-data User = User
+data UserSimple = UserSimple
     { displayName :: Maybe Text
     , externalUrls :: ExternalURL
     , followers :: Maybe Followers
@@ -17,10 +17,10 @@ data User = User
     , uri :: URI
     }
     deriving (Eq, Ord, Show, Generic)
-    deriving (FromJSON) via CustomJSON User
+    deriving (FromJSON) via CustomJSON UserSimple
 
-data Track = Track
-    { artists :: [Artist]
+data TrackSimple = TrackSimple
+    { artists :: [ArtistSimple]
     , availableMarkets :: Maybe [Text]
     , discNumber :: Int
     , durationMs :: Int
@@ -36,11 +36,11 @@ data Track = Track
     , uri :: URI
     }
     deriving (Eq, Ord, Show, Generic)
-    deriving (FromJSON) via CustomJSON Track
+    deriving (FromJSON) via CustomJSON TrackSimple
 
-data Album = Album
+data AlbumSimple = AlbumSimple
     { albumType :: AlbumType
-    , artists :: [Artist]
+    , artists :: [ArtistSimple]
     , availableMarkets :: Maybe [Text]
     , externalUrls :: ExternalURL
     , albumGroup :: Maybe AlbumGroup
@@ -54,9 +54,9 @@ data Album = Album
     , uri :: URI
     }
     deriving (Eq, Ord, Show, Generic)
-    deriving (FromJSON) via CustomJSON Album
+    deriving (FromJSON) via CustomJSON AlbumSimple
 
-data Artist = Artist
+data ArtistSimple = ArtistSimple
     { externalUrls :: ExternalURL
     , href :: Href
     , id :: ID
@@ -64,20 +64,20 @@ data Artist = Artist
     , uri :: URI
     }
     deriving (Eq, Ord, Show, Generic)
-    deriving (FromJSON) via CustomJSON Artist
+    deriving (FromJSON) via CustomJSON ArtistSimple
 
-data Playlist = Playlist
+data PlaylistSimple = PlaylistSimple
     { collaborative :: Bool
     , externalUrls :: ExternalURL
     , href :: Href
     , id :: ID
     , images :: [Image]
     , name :: Text
-    , owner :: User
+    , owner :: UserSimple
     , public :: Maybe Bool
     , snapshotId :: ID
     , tracks :: Tracks
     , uri :: URI
     }
     deriving (Eq, Ord, Show, Generic)
-    deriving (FromJSON) via CustomJSON Playlist
+    deriving (FromJSON) via CustomJSON PlaylistSimple
