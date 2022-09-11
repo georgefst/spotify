@@ -108,4 +108,4 @@ test-suite tests
         spotify,
         spotify-types,
         spotify-servant,
-        Cabal,
+        Cabal ^>= 3.6,
