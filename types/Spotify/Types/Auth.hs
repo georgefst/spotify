@@ -5,25 +5,26 @@ import Spotify.Types.Internal.CustomJSON
 import Control.Monad ((>=>))
 import Data.Aeson (FromJSON, parseJSON)
 import Data.ByteString.Base64 qualified as B64
+import Data.String (IsString)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import GHC.Generics (Generic)
 import Servant.API (ToHttpApiData (toUrlPiece))
 
 newtype ClientId = ClientId {unwrap :: Text}
-    deriving (Eq, Ord, Show)
+    deriving newtype (Eq, Ord, Show, IsString)
 
 newtype ClientSecret = ClientSecret {unwrap :: Text}
-    deriving (Eq, Ord, Show)
+    deriving newtype (Eq, Ord, Show, IsString)
 
 newtype AccessToken = AccessToken {unwrap :: Text}
-    deriving (Eq, Ord, Show)
+    deriving newtype (Eq, Ord, Show, IsString)
     deriving newtype (FromJSON)
 instance ToHttpApiData AccessToken where
     toUrlPiece (AccessToken t) = toUrlPiece $ "Bearer " <> t
 
 newtype RefreshToken = RefreshToken {unwrap :: Text}
-    deriving (Eq, Ord, Show)
+    deriving newtype (Eq, Ord, Show, IsString)
     deriving newtype (FromJSON)
 
 data IdAndSecret = IdAndSecret ClientId ClientSecret
