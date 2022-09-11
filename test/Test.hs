@@ -3,6 +3,7 @@
 module Test (tests) where
 
 import Spotify
+import Spotify.Servant.Playlists
 import Spotify.Types.Misc
 import Spotify.Types.Simple qualified as Simple
 import Spotify.Types.Users
@@ -42,7 +43,15 @@ runAll = do
 
     Paging{items} <- getMyPlaylists $ PagingParams{limit = Just 50, offset = Nothing}
     forM_ (filter ((== playlistName) . (.name)) items) $ unfollowPlaylist . (.id)
-    Simple.Playlist{id = playlistId} <- createPlaylist me playlistName False False "a description"
+    Simple.Playlist{id = playlistId} <-
+        createPlaylist
+            me
+            CreatePlaylistOpts
+                { name = playlistName
+                , public = False
+                , collaborative = False
+                , description = "a description"
+                }
     addToPlaylist playlistId Nothing $
         map (idToURI "track") [track3, track4, track5]
             <> map (idToURI "episode") [podEpisode1]

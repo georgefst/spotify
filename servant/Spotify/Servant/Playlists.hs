@@ -40,9 +40,9 @@ type CreatePlaylist =
     "users"
         :> Capture "user_id" ID
         :> "playlists"
-        :> SpotBody CreatePlaylistBody
+        :> SpotBody CreatePlaylistOpts
         :> SpotPostCreated Simple.Playlist
-data CreatePlaylistBody = CreatePlaylistBody
+data CreatePlaylistOpts = CreatePlaylistOpts
     { name :: Text
     , public :: Bool
     , collaborative :: Bool

@@ -211,8 +211,8 @@ addToPlaylist p position uris = fmap coerce $ inSpot $ cli @AddToPlaylist p AddT
 getMyPlaylists :: MonadSpotify m => PagingParams -> m (Paging Simple.Playlist)
 getMyPlaylists pps = inSpot $ withPagingParams pps $ cli @GetMyPlaylists
 
-createPlaylist :: MonadSpotify m => ID -> Text -> Bool -> Bool -> Text -> m Simple.Playlist
-createPlaylist u name public collaborative description = inSpot $ cli @CreatePlaylist u CreatePlaylistBody{..}
+createPlaylist :: MonadSpotify m => ID -> CreatePlaylistOpts -> m Simple.Playlist
+createPlaylist u opts = inSpot $ cli @CreatePlaylist u opts
 
 getCategories :: MonadSpotify m => ID -> Maybe Country -> Maybe Locale -> m Category
 getCategories = inSpot .:. cli @GetCategories
