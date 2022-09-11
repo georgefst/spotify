@@ -15,7 +15,7 @@ import Servant.API (
 
 type AddToPlaylist =
     "playlists"
-        :> Capture "playlist_id" ID
+        :> Capture "playlist_id" PlaylistID
         :> "tracks"
         :> SpotBody AddToPlaylistBody
         :> SpotPostCreated AddToPlaylistResponse
@@ -26,7 +26,7 @@ data AddToPlaylistBody = AddToPlaylistBody
     deriving (Generic)
     deriving (ToJSON)
 newtype AddToPlaylistResponse = AddToPlaylistResponse
-    { snapshotId :: ID
+    { snapshotId :: SnapshotID
     }
     deriving (Generic)
     deriving (FromJSON) via CustomJSON AddToPlaylistResponse
@@ -38,7 +38,7 @@ type GetMyPlaylists =
 
 type CreatePlaylist =
     "users"
-        :> Capture "user_id" ID
+        :> Capture "user_id" UserID
         :> "playlists"
         :> SpotBody CreatePlaylistOpts
         :> SpotPostCreated PlaylistSimple

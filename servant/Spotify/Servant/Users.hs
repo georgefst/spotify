@@ -16,11 +16,11 @@ type GetMe =
 
 type GetUser =
     "users"
-        :> Capture "user_id" ID
+        :> Capture "user_id" UserID
         :> SpotGet User
 
 type UnfollowPlaylist =
     "playlists"
-        :> Capture "playlist_id" ID
+        :> Capture "playlist_id" PlaylistID
         :> "followers"
         :> SpotDelete NoContent

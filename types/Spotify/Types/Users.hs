@@ -15,7 +15,7 @@ data User = User
     , externalUrls :: ExternalURL
     , followers :: Maybe Followers
     , href :: Href
-    , id :: ID
+    , id :: UserID
     , images :: Maybe [Image]
     , product :: Maybe Product
     , uri :: URI

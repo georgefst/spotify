@@ -12,7 +12,7 @@ data UserSimple = UserSimple
     , externalUrls :: ExternalURL
     , followers :: Maybe Followers
     , href :: Href
-    , id :: ID
+    , id :: UserID
     , images :: Maybe [Image]
     , uri :: URI
     }
@@ -27,7 +27,7 @@ data TrackSimple = TrackSimple
     , explicit :: Bool
     , externalUrls :: ExternalURL
     , href :: Href
-    , id :: ID
+    , id :: TrackID
     , isPlayable :: Maybe Bool
     , linkedFrom :: Maybe TrackLink
     , name :: Text
@@ -45,7 +45,7 @@ data AlbumSimple = AlbumSimple
     , externalUrls :: ExternalURL
     , albumGroup :: Maybe AlbumGroup
     , href :: Href
-    , id :: ID
+    , id :: AlbumID
     , images :: [Image]
     , name :: Text
     , releaseDate :: Text
@@ -59,7 +59,7 @@ data AlbumSimple = AlbumSimple
 data ArtistSimple = ArtistSimple
     { externalUrls :: ExternalURL
     , href :: Href
-    , id :: ID
+    , id :: ArtistID
     , name :: Text
     , uri :: URI
     }
@@ -70,12 +70,12 @@ data PlaylistSimple = PlaylistSimple
     { collaborative :: Bool
     , externalUrls :: ExternalURL
     , href :: Href
-    , id :: ID
+    , id :: PlaylistID
     , images :: [Image]
     , name :: Text
     , owner :: UserSimple
     , public :: Maybe Bool
-    , snapshotId :: ID
+    , snapshotId :: SnapshotID
     , tracks :: Tracks
     , uri :: URI
     }

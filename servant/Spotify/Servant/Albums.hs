@@ -14,13 +14,13 @@ import Servant.API (
 
 type GetAlbum =
     "albums"
-        :> Capture "id" ID
+        :> Capture "id" AlbumID
         :> QueryParam "market" Market
         :> SpotGet Album
 
 type GetAlbumTracks =
     "albums"
-        :> Capture "id" ID
+        :> Capture "id" AlbumID
         :> "tracks"
         :> QueryParam "market" Market
         :> SpotPaging TrackSimple
@@ -28,5 +28,5 @@ type GetAlbumTracks =
 type RemoveAlbums =
     "me"
         :> "albums"
-        :> SpotBody [ID]
+        :> SpotBody [AlbumID]
         :> SpotDelete NoContent

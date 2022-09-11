@@ -12,7 +12,7 @@ data Artist = Artist
     , followers :: Followers
     , genres :: [Genre]
     , href :: Href
-    , id :: ID
+    , id :: ArtistID
     , images :: [Image]
     , name :: Text
     , popularity :: Int

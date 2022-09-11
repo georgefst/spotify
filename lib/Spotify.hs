@@ -160,8 +160,6 @@ marketFromToken :: Maybe Market
 marketFromToken = Just "from_token"
 withPagingParams :: PagingParams -> (Maybe Int -> Maybe Int -> t) -> t
 withPagingParams PagingParams{limit, offset} f = f limit offset
-idToURI :: Text -> ID -> URI -- this will make more sense when I start using separate ID types for album/track/episode etc. (type class?)
-idToURI t (ID i) = URI $ "spotify:" <> t <> ":" <> i
 
 data PagingParams = PagingParams
     { limit :: Maybe Int
@@ -180,39 +178,39 @@ newTokenIO a m = runClientM (requestToken a) (mkClientEnv m accountsBase)
             [("grant_type", "refresh_token"), ("refresh_token", t)]
             (IdAndSecret i s)
 
-getAlbum :: MonadSpotify m => ID -> m Album
+getAlbum :: MonadSpotify m => AlbumID -> m Album
 getAlbum a = inSpot $ cli @GetAlbum a marketFromToken
-getAlbumTracks :: MonadSpotify m => ID -> PagingParams -> m (Paging TrackSimple)
+getAlbumTracks :: MonadSpotify m => AlbumID -> PagingParams -> m (Paging TrackSimple)
 getAlbumTracks a pps = inSpot $ withPagingParams pps $ cli @GetAlbumTracks a marketFromToken
-removeAlbums :: MonadSpotify m => [ID] -> m ()
+removeAlbums :: MonadSpotify m => [AlbumID] -> m ()
 removeAlbums = noContent . inSpot . cli @RemoveAlbums
 
-getArtist :: MonadSpotify m => ID -> m Artist
+getArtist :: MonadSpotify m => ArtistID -> m Artist
 getArtist = inSpot . cli @GetArtist
 
-getTrack :: MonadSpotify m => ID -> m Track
+getTrack :: MonadSpotify m => TrackID -> m Track
 getTrack t = inSpot $ cli @GetTrack t marketFromToken
 getSavedTracks :: MonadSpotify m => PagingParams -> m (Paging SavedTrack)
 getSavedTracks pps = inSpot $ withPagingParams pps $ cli @GetSavedTracks marketFromToken
-saveTracks :: MonadSpotify f => [ID] -> f ()
+saveTracks :: MonadSpotify f => [TrackID] -> f ()
 saveTracks = noContent . inSpot . cli @SaveTracks
-removeTracks :: MonadSpotify f => [ID] -> f ()
+removeTracks :: MonadSpotify f => [TrackID] -> f ()
 removeTracks = noContent . inSpot . cli @RemoveTracks
 
 getMe :: MonadSpotify m => m User
 getMe = inSpot $ cli @GetMe
-getUser :: MonadSpotify m => ID -> m User
+getUser :: MonadSpotify m => UserID -> m User
 getUser u = inSpot $ cli @GetUser u
-unfollowPlaylist :: MonadSpotify m => ID -> m ()
+unfollowPlaylist :: MonadSpotify m => PlaylistID -> m ()
 unfollowPlaylist = noContent . inSpot . cli @UnfollowPlaylist
 
-addToPlaylist :: MonadSpotify m => ID -> Maybe Int -> [URI] -> m Text
+addToPlaylist :: MonadSpotify m => PlaylistID -> Maybe Int -> [URI] -> m Text
 addToPlaylist p position uris = fmap coerce $ inSpot $ cli @AddToPlaylist p AddToPlaylistBody{..}
 getMyPlaylists :: MonadSpotify m => PagingParams -> m (Paging PlaylistSimple)
 getMyPlaylists pps = inSpot $ withPagingParams pps $ cli @GetMyPlaylists
 
-createPlaylist :: MonadSpotify m => ID -> CreatePlaylistOpts -> m PlaylistSimple
+createPlaylist :: MonadSpotify m => UserID -> CreatePlaylistOpts -> m PlaylistSimple
 createPlaylist u opts = inSpot $ cli @CreatePlaylist u opts
 
-getCategories :: MonadSpotify m => ID -> Maybe Country -> Maybe Locale -> m Category
+getCategories :: MonadSpotify m => CategoryID -> Maybe Country -> Maybe Locale -> m Category
 getCategories = inSpot .:. cli @GetCategories

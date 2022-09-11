@@ -19,7 +19,7 @@ data Track = Track
     , externalIds :: ExternalID
     , externalUrls :: ExternalURL
     , href :: Href
-    , id :: ID
+    , id :: TrackID
     , isPlayable :: Maybe Bool
     , linkedFrom :: Maybe TrackLink
     , restrictions :: Maybe Restrictions
@@ -38,7 +38,7 @@ data AudioFeatures = AudioFeatures
     , danceability :: Float
     , durationMs :: Int
     , energy :: Float
-    , id :: ID
+    , id :: TrackID
     , instrumentalness :: Float
     , key :: Key
     , liveness :: Float

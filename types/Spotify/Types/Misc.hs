@@ -1,4 +1,5 @@
 {- HLINT ignore "Use newtype instead of data" -}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Spotify.Types.Misc where
 
@@ -7,9 +8,13 @@ import Spotify.Types.Internal.EnumJSON
 
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
+import Data.Proxy (Proxy (Proxy))
 import Data.String (IsString)
 import Data.Text (Text)
+import Data.Text qualified as T
 import GHC.Generics (Generic)
+import GHC.Records (HasField)
+import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
 import Servant.API (ToHttpApiData)
 
 data Copyright = Copyright
@@ -92,7 +97,7 @@ data Key
 data TrackLink = TrackLink
     { externalUrls :: ExternalURL
     , href :: Href
-    , id :: ID
+    , id :: TrackID
     , url :: Text
     }
     deriving (Eq, Ord, Show, Generic)
@@ -137,7 +142,39 @@ newtype Href = Href {unwrap :: Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON, IsString)
 
-newtype ID = ID {unwrap :: Text}
+class ToURI a where
+    toURI :: a -> URI
+newtype URIPrefix (s :: Symbol) a = URIPrefix a
+instance (KnownSymbol s, HasField "unwrap" a Text) => ToURI (URIPrefix s a) where
+    toURI (URIPrefix x) = URI $ "spotify:" <> T.pack (symbolVal (Proxy @s)) <> ":" <> x.unwrap
+newtype AlbumID = AlbumID {unwrap :: Text}
+    deriving (Show)
+    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving (ToURI) via URIPrefix "album" AlbumID
+newtype ArtistID = ArtistID {unwrap :: Text}
+    deriving (Show)
+    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving (ToURI) via URIPrefix "artist" ArtistID
+newtype EpisodeID = EpisodeID {unwrap :: Text}
+    deriving (Show)
+    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving (ToURI) via URIPrefix "episode" EpisodeID
+newtype TrackID = TrackID {unwrap :: Text}
+    deriving (Show)
+    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving (ToURI) via URIPrefix "track" TrackID
+newtype UserID = UserID {unwrap :: Text}
+    deriving (Show)
+    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving (ToURI) via URIPrefix "user" UserID
+newtype PlaylistID = PlaylistID {unwrap :: Text}
+    deriving (Show)
+    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving (ToURI) via URIPrefix "playlist" PlaylistID
+newtype CategoryID = CategoryID {unwrap :: Text}
+    deriving (Show)
+    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
+newtype SnapshotID = SnapshotID {unwrap :: Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
 

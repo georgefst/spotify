@@ -10,7 +10,7 @@ import GHC.Generics (Generic)
 data Category = Category
     { href :: Href
     , icons :: [Image]
-    , id :: ID
+    , id :: CategoryID
     , name :: Text
     }
     deriving (Eq, Ord, Show, Generic)

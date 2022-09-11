@@ -11,5 +11,5 @@ import Servant.API (
 
 type GetArtist =
     "artists"
-        :> Capture "id" ID
+        :> Capture "id" ArtistID
         :> SpotGet Artist

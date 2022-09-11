@@ -13,7 +13,7 @@ import Servant.API (
 
 type GetTrack =
     "tracks"
-        :> Capture "id" ID
+        :> Capture "id" TrackID
         :> QueryParam "market" Market
         :> SpotGet Track
 
@@ -26,11 +26,11 @@ type GetSavedTracks =
 type SaveTracks =
     "me"
         :> "tracks"
-        :> SpotBody [ID]
+        :> SpotBody [TrackID]
         :> SpotDelete NoContent
 
 type RemoveTracks =
     "me"
         :> "tracks"
-        :> SpotBody [ID]
+        :> SpotBody [TrackID]
         :> SpotDelete NoContent

@@ -13,7 +13,7 @@ import Servant.API (
 type GetCategories =
     "browse"
         :> "categories"
-        :> Capture "category_id" ID
+        :> Capture "category_id" CategoryID
         :> QueryParam "country" Country
         :> QueryParam "locale" Locale
         :> SpotGet Category

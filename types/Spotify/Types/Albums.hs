@@ -17,7 +17,7 @@ data Album = Album
     , externalUrls :: ExternalURL
     , genres :: [Text]
     , href :: Href
-    , id :: ID
+    , id :: AlbumID
     , images :: [Image]
     , label :: Text
     , name :: Text
