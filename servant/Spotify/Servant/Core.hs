@@ -1,9 +1,11 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 module Spotify.Servant.Core where
 
 import Spotify.Types.Auth
 import Spotify.Types.Misc
 
-import Data.Text (Text)
+import Data.HashMap.Strict qualified as HM
 import Servant.API (
     Delete,
     FormUrlEncoded,
@@ -19,12 +21,20 @@ import Servant.API (
     Strict,
     type (:>),
  )
+import Web.FormUrlEncoded (Form (Form), ToForm (toForm))
 
 type Authorization =
     "token"
-        :> ReqBody '[FormUrlEncoded] [(Text, Text)]
+        :> ReqBody '[FormUrlEncoded] RefreshToken
         :> Header' '[Strict, Required] "Authorization" IdAndSecret
         :> Post '[JSON] TokenResponse
+instance ToForm RefreshToken where
+    toForm (RefreshToken t) =
+        Form $
+            HM.fromList
+                [ ("grant_type", ["refresh_token"])
+                , ("refresh_token", [t])
+                ]
 
 type AuthHeader = Header' '[Strict, Required] "Authorization" AccessToken
 

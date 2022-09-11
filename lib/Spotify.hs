@@ -174,9 +174,9 @@ newToken = liftEitherSpot =<< liftIO =<< (newTokenIO <$> getAuth <*> getManager)
 newTokenIO :: Auth -> Manager -> IO (Either ClientError TokenResponse)
 newTokenIO a m = runClientM (requestToken a) (mkClientEnv m accountsBase)
   where
-    requestToken (Auth (RefreshToken t) i s) =
+    requestToken (Auth t i s) =
         cli @Authorization
-            [("grant_type", "refresh_token"), ("refresh_token", t)]
+            t
             (IdAndSecret i s)
 
 getAlbum :: MonadSpotify m => AlbumID -> m Album

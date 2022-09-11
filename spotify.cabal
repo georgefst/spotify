@@ -84,7 +84,9 @@ library spotify-servant
         Spotify.Servant.Categories
     build-depends:
         spotify-types,
+        http-api-data,
         servant-client ^>= 0.19,
+        unordered-containers,
 
 library
     import: common
