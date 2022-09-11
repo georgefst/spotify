@@ -32,6 +32,7 @@ common common
         text ^>= 1.2.5,
         transformers ^>= 0.5.6,
         time ^>= 1.11.1,
+        unordered-containers ^>= 0.2.19,
     default-language: GHC2021
     default-extensions:
         AllowAmbiguousTypes
@@ -84,9 +85,8 @@ library spotify-servant
         Spotify.Servant.Categories
     build-depends:
         spotify-types,
-        http-api-data,
+        http-api-data ^>= 0.4.3,
         servant-client ^>= 0.19,
-        unordered-containers,
 
 library
     import: common
