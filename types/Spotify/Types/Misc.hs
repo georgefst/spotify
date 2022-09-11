@@ -7,6 +7,7 @@ import Spotify.Types.Internal.EnumJSON
 
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
+import Data.String (IsString)
 import Data.Text (Text)
 import GHC.Generics (Generic)
 import Servant.API (ToHttpApiData)
@@ -126,35 +127,35 @@ data Product
     deriving (FromJSON) via CustomJSON Product
 
 newtype Market = Market Text
-    deriving newtype (ToHttpApiData)
+    deriving newtype (Eq, Ord, ToHttpApiData, IsString)
 
 newtype Genre = Genre Text
     deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON)
+    deriving newtype (Eq, Ord, FromJSON, IsString)
 
 newtype Href = Href Text
     deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON)
+    deriving newtype (Eq, Ord, FromJSON, IsString)
 
 newtype ID = ID Text
     deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData)
+    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
 
 newtype URL = URL Text
     deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON)
+    deriving newtype (Eq, Ord, FromJSON, IsString)
 
 newtype URI = URI Text
     deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON)
+    deriving newtype (Eq, Ord, FromJSON, ToJSON, IsString)
 
 newtype Country = Country Text
     deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData)
+    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
 
 newtype Locale = Locale Text
     deriving (Show)
-    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData)
+    deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
 
 newtype HTTPError = HTTPError Int
     deriving (Show)

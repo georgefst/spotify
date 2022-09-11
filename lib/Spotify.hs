@@ -53,16 +53,16 @@ instance MonadSpotify IO where
         let getData file prompt =
                 -- look for file - otherwise get from stdin
                 T.readFile path <|> do
-                    res <- T.putStr (prompt <> T.pack ": ") >> T.getLine
+                    res <- T.putStr (prompt <> ": ") >> T.getLine
                     createDirectoryIfMissing False dir
                     T.writeFile path res
                     pure res
               where
                 path = dir </> file
         Auth
-            <$> (RefreshToken <$> getData "refresh" (T.pack "Refresh token"))
-            <*> (ClientId <$> getData "id" (T.pack "Client id"))
-            <*> (ClientSecret <$> getData "secret" (T.pack "Client secret"))
+            <$> (RefreshToken <$> getData "refresh" "Refresh token")
+            <*> (ClientId <$> getData "id" "Client id")
+            <*> (ClientSecret <$> getData "secret" "Client secret")
     getManager = newManager tlsManagerSettings
     getToken = do
         path <- monadSpotifyIOTokenPath
@@ -128,12 +128,12 @@ inSpot x = do
             if statusCode (responseStatusCode resp) == 401
                 then do
                     Error{message} <- liftEitherSpot $ bimap mkError (.error) $ eitherDecode @Error' $ responseBody resp
-                    if message == T.pack "The access token expired"
+                    if message == "The access token expired"
                         then pure True
                         else no
                 else no
           where
-            mkError s = DecodeFailure (T.pack "Failed to decode a spotify error: " <> T.pack s) resp
+            mkError s = DecodeFailure ("Failed to decode a spotify error: " <> T.pack s) resp
         _ -> no
       where
         no = pure False
@@ -157,11 +157,11 @@ cli = client $ Proxy @api
 noContent :: Functor f => f NoContent -> f ()
 noContent = fmap \NoContent -> ()
 marketFromToken :: Maybe Market
-marketFromToken = Just $ Market $ T.pack "from_token"
+marketFromToken = Just "from_token"
 withPagingParams :: PagingParams -> (Maybe Int -> Maybe Int -> t) -> t
 withPagingParams PagingParams{limit, offset} f = f limit offset
 idToURI :: Text -> ID -> URI -- this will make more sense when I start using separate ID types for album/track/episode etc. (type class?)
-idToURI t (ID i) = URI $ T.pack "spotify:" <> t <> T.pack ":" <> i
+idToURI t (ID i) = URI $ "spotify:" <> t <> ":" <> i
 
 data PagingParams = PagingParams
     { limit :: Maybe Int
@@ -177,7 +177,7 @@ newTokenIO a m = runClientM (requestToken a) (mkClientEnv m accountsBase)
   where
     requestToken (Auth (RefreshToken t) i s) =
         cli @Authorization
-            [(T.pack "grant_type", T.pack "refresh_token"), (T.pack "refresh_token", t)]
+            [("grant_type", "refresh_token"), ("refresh_token", t)]
             (IdAndSecret i s)
 
 getAlbum :: MonadSpotify m => ID -> m Album

@@ -9,7 +9,6 @@ import Spotify.Types.Users
 
 import Control.Monad
 import Data.Functor
-import Data.Text qualified as T
 import Distribution.TestSuite
 
 tests :: IO [Test]
@@ -43,22 +42,22 @@ runAll = do
 
     Paging{items} <- getMyPlaylists $ PagingParams{limit = Just 50, offset = Nothing}
     forM_ (filter ((== playlistName) . (.name)) items) $ unfollowPlaylist . (.id)
-    Simple.Playlist{id = playlistId} <- createPlaylist me playlistName False False $ T.pack "a description"
+    Simple.Playlist{id = playlistId} <- createPlaylist me playlistName False False "a description"
     addToPlaylist playlistId Nothing $
-        map (idToURI $ T.pack "track") [track3, track4, track5]
-            <> map (idToURI $ T.pack "episode") [podEpisode1]
+        map (idToURI "track") [track3, track4, track5]
+            <> map (idToURI "episode") [podEpisode1]
 
     getTrack track1
 
     pure ()
   where
-    album1 = ID $ T.pack "6l8tlcL7JOuG03fAAmcohv" -- push barman
-    album2 = ID $ T.pack "4sIViEgySoHMaqsDLXN45p" -- aerosmith 1
-    album3 = ID $ T.pack "5NHCg9rnAwBPDKOu2LSSUq" -- aerosmith 2
-    track1 = ID $ T.pack "4rTurOCj7TorrnvmacjAFc" -- aerosmith 1.1
-    track2 = ID $ T.pack "6z2uJuztb6zgLpUJJHupv7" -- aerosmith 1.2
-    track3 = ID $ T.pack "7h8bnu16P1gLNCwtiQ1Nk9" -- OTN/MGF
-    track4 = ID $ T.pack "1Qr6phLmzW5Z4k3ggATKh5" -- DSN
-    track5 = ID $ T.pack "2twka2Q4vhCaBMJgtcqLR1" -- CHC
-    podEpisode1 = ID $ T.pack "2T8XOBBkTrqtw8ikXFB2eM" -- Parched
-    playlistName = T.pack "Haskell test playlist"
+    album1 = "6l8tlcL7JOuG03fAAmcohv" -- push barman
+    album2 = "4sIViEgySoHMaqsDLXN45p" -- aerosmith 1
+    album3 = "5NHCg9rnAwBPDKOu2LSSUq" -- aerosmith 2
+    track1 = "4rTurOCj7TorrnvmacjAFc" -- aerosmith 1.1
+    track2 = "6z2uJuztb6zgLpUJJHupv7" -- aerosmith 1.2
+    track3 = "7h8bnu16P1gLNCwtiQ1Nk9" -- OTN/MGF
+    track4 = "1Qr6phLmzW5Z4k3ggATKh5" -- DSN
+    track5 = "2twka2Q4vhCaBMJgtcqLR1" -- CHC
+    podEpisode1 = "2T8XOBBkTrqtw8ikXFB2eM" -- Parched
+    playlistName = "Haskell test playlist"

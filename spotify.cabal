@@ -53,6 +53,7 @@ common common
         NoMonomorphismRestriction
         OverloadedLabels
         OverloadedRecordDot
+        OverloadedStrings
         PartialTypeSignatures
         RecordWildCards
     ghc-options:
