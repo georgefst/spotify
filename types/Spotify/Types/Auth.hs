@@ -10,19 +10,19 @@ import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import GHC.Generics (Generic)
 import Servant.API (ToHttpApiData (toUrlPiece))
 
-newtype ClientId = ClientId Text
+newtype ClientId = ClientId {unwrap :: Text}
     deriving (Eq, Ord, Show)
 
-newtype ClientSecret = ClientSecret Text
+newtype ClientSecret = ClientSecret {unwrap :: Text}
     deriving (Eq, Ord, Show)
 
-newtype AccessToken = AccessToken Text
+newtype AccessToken = AccessToken {unwrap :: Text}
     deriving (Eq, Ord, Show)
     deriving newtype (FromJSON)
 instance ToHttpApiData AccessToken where
     toUrlPiece (AccessToken t) = toUrlPiece $ "Bearer " <> t
 
-newtype RefreshToken = RefreshToken Text
+newtype RefreshToken = RefreshToken {unwrap :: Text}
     deriving (Eq, Ord, Show)
     deriving newtype (FromJSON)
 

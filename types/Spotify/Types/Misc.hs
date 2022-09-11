@@ -126,49 +126,49 @@ data Product
     deriving (Eq, Ord, Show, Generic)
     deriving (FromJSON) via CustomJSON Product
 
-newtype Market = Market Text
+newtype Market = Market {unwrap :: Text}
     deriving newtype (Eq, Ord, ToHttpApiData, IsString)
 
-newtype Genre = Genre Text
+newtype Genre = Genre {unwrap :: Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON, IsString)
 
-newtype Href = Href Text
+newtype Href = Href {unwrap :: Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON, IsString)
 
-newtype ID = ID Text
+newtype ID = ID {unwrap :: Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
 
-newtype URL = URL Text
+newtype URL = URL {unwrap :: Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON, IsString)
 
-newtype URI = URI Text
+newtype URI = URI {unwrap :: Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON, ToJSON, IsString)
 
-newtype Country = Country Text
+newtype Country = Country {unwrap :: Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
 
-newtype Locale = Locale Text
+newtype Locale = Locale {unwrap :: Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON, ToJSON, ToHttpApiData, IsString)
 
-newtype HTTPError = HTTPError Int
+newtype HTTPError = HTTPError {unwrap :: Int}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON)
 
-newtype Restrictions = Restrictions (Map Text Text)
+newtype Restrictions = Restrictions {unwrap :: Map Text Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON)
 
-newtype ExternalID = ExternalID (Map Text Text)
+newtype ExternalID = ExternalID {unwrap :: Map Text Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON)
 
-newtype ExternalURL = ExternalURL (Map Text Text)
+newtype ExternalURL = ExternalURL {unwrap :: Map Text Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON)
