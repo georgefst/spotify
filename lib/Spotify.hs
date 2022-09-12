@@ -12,6 +12,7 @@ import Spotify.Types.Artists
 import Spotify.Types.Auth
 import Spotify.Types.Categories
 import Spotify.Types.Misc
+import Spotify.Types.Playlists
 import Spotify.Types.Simple
 import Spotify.Types.Tracks
 import Spotify.Types.Users
@@ -206,6 +207,8 @@ getUser u = inSpot $ cli @GetUser u
 unfollowPlaylist :: MonadSpotify m => PlaylistID -> m ()
 unfollowPlaylist = noContent . inSpot . cli @UnfollowPlaylist
 
+getPlaylist :: MonadSpotify m => PlaylistID -> m Playlist
+getPlaylist = inSpot . cli @GetPlaylist
 addToPlaylist :: MonadSpotify m => PlaylistID -> Maybe Int -> [URI] -> m Text
 addToPlaylist p position uris = fmap coerce $ inSpot $ cli @AddToPlaylist p AddToPlaylistBody{..}
 getMyPlaylists :: MonadSpotify m => PagingParams -> m (Paging PlaylistSimple)

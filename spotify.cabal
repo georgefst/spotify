@@ -65,6 +65,7 @@ library spotify-types
         Spotify.Types.Artists
         Spotify.Types.Tracks
         Spotify.Types.Users
+        Spotify.Types.Playlists
         Spotify.Types.Categories
         Spotify.Types.Simple
         Spotify.Types.Misc

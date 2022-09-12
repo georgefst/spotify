@@ -3,6 +3,7 @@ module Spotify.Servant.Playlists where
 import Spotify.Servant.Core
 import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Misc
+import Spotify.Types.Playlists
 import Spotify.Types.Simple
 
 import Data.Aeson (FromJSON, ToJSON)
@@ -12,6 +13,11 @@ import Servant.API (
     Capture,
     type (:>),
  )
+
+type GetPlaylist =
+    "playlists"
+        :> Capture "playlist_id" PlaylistID
+        :> SpotGet Playlist
 
 type AddToPlaylist =
     "playlists"
