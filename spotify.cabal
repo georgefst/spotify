@@ -103,6 +103,17 @@ library
         http-types ^>= 0.12.3,
         servant-client ^>= 0.19,
 
+executable examples
+    import: common
+    hs-source-dirs: examples
+    main-is: Main.hs
+    other-modules:
+        Spotify.CreateArtistLikedSongsPlaylist
+    build-depends:
+        spotify-types,
+        spotify-servant,
+        spotify,
+
 test-suite tests
     import: common
     type: detailed-0.9
