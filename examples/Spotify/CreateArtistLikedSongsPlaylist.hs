@@ -45,7 +45,7 @@ main artists = do
   where
     showT = T.pack . show
     putT = liftIO . T.putStrLn
-    logger p =
+    logger p = do
         putT $
             mconcat
                 [ "Getting saved tracks "
@@ -56,3 +56,4 @@ main artists = do
                 , showT p.total
                 , "..."
                 ]
+        pure True
