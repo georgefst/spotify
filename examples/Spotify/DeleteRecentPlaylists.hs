@@ -8,6 +8,7 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Foldable (for_)
 import Data.Text (Text)
 import Data.Text.IO qualified as T
+import System.IO (hFlush, stdout)
 
 main :: MonadSpotify m => Int -> m ()
 main n = do
@@ -19,7 +20,7 @@ main n = do
 
 promptForConfirmation :: MonadIO m => Text -> m () -> m ()
 promptForConfirmation t x = do
-    liftIO $ T.putStr $ t <> "? [Y/n] "
+    liftIO $ T.putStr (t <> "? [Y/n] ") >> hFlush stdout
     liftIO T.getLine >>= \case
         "y" -> x
         "Y" -> x
