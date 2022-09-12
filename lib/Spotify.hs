@@ -223,12 +223,12 @@ getCategories = inSpot .:. cli @GetCategories
 -- higher-level wrappers around main API
 -- takes a callback which can be used for side effects, or to return False for early exit
 allPages :: Monad m => Maybe (Paging a -> m Bool) -> (PagingParams -> m (Paging a)) -> m [a]
-allPages logger x =
+allPages callback x =
     concat <$> flip unfoldrM (0, Nothing, True) \(i, total, keepGoing) -> do
         if keepGoing && maybe True (i <) total
             then do
                 p <- x $ PagingParams{limit = Just limit, offset = Just i}
-                keepGoing' <- maybe (pure True) ($ p) logger
+                keepGoing' <- maybe (pure True) ($ p) callback
                 pure $ Just (p.items, (i + limit, Just p.total, keepGoing'))
             else pure Nothing
   where
