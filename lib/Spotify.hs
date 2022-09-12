@@ -218,14 +218,14 @@ getCategories :: MonadSpotify m => CategoryID -> Maybe Country -> Maybe Locale -
 getCategories = inSpot .:. cli @GetCategories
 
 -- higher-level wrappers around main API
-allPages :: Monad m => Maybe (Paging a -> m ()) -> (PagingParams -> m (Paging a)) -> m [a]
+allPages :: Monad m => Maybe (Paging a -> m Bool) -> (PagingParams -> m (Paging a)) -> m [a]
 allPages logger x =
-    concat <$> flip unfoldrM (0, Nothing) \(i, n) -> do
-        if maybe True (i <) n
+    concat <$> flip unfoldrM (0, Nothing, True) \(i, n, keepGoing) -> do
+        if keepGoing && maybe True (i <) n
             then do
                 p <- x $ PagingParams{limit = Just limit, offset = Just i}
-                maybe (pure ()) ($ p) logger
-                pure $ Just (p.items, (i + limit, Just p.total))
+                keepGoing' <- maybe (pure True) ($ p) logger
+                pure $ Just (p.items, (i + limit, Just p.total, keepGoing'))
             else pure Nothing
   where
     limit = 50 -- API docs say this is the max
