@@ -218,6 +218,7 @@ getCategories :: MonadSpotify m => CategoryID -> Maybe Country -> Maybe Locale -
 getCategories = inSpot .:. cli @GetCategories
 
 -- higher-level wrappers around main API
+-- takes a callback which can be used for side effects, or to return False for early exit
 allPages :: Monad m => Maybe (Paging a -> m Bool) -> (PagingParams -> m (Paging a)) -> m [a]
 allPages logger x =
     concat <$> flip unfoldrM (0, Nothing, True) \(i, n, keepGoing) -> do
