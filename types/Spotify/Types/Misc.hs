@@ -7,8 +7,10 @@ import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Internal.EnumJSON
 
 import Data.Aeson (FromJSON, ToJSON)
+import Data.List.Extra (enumerate)
 import Data.Map (Map)
 import Data.Proxy (Proxy (Proxy))
+import Data.Set qualified as Set
 import Data.String (IsString)
 import Data.Text (Text)
 import Data.Text qualified as T
@@ -169,7 +171,7 @@ newtype SnapshotID = SnapshotID {unwrap :: Text}
     deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
 
 newtype URL = URL {unwrap :: Text}
-    deriving newtype (Eq, Ord, Show, FromJSON, IsString)
+    deriving newtype (Eq, Ord, Show, FromJSON, IsString, ToHttpApiData)
 
 newtype URI = URI {unwrap :: Text}
     deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, IsString)
@@ -195,3 +197,48 @@ newtype ExternalID = ExternalID {unwrap :: Map Text Text}
 newtype ExternalURL = ExternalURL {unwrap :: Map Text Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON)
+
+data Scope
+    = UgcImageUpload
+    | UserModifyPlaybackState
+    | UserReadPlaybackState
+    | UserReadCurrentlyPlaying
+    | UserFollowModify
+    | UserFollowRead
+    | UserReadRecentlyPlayed
+    | UserReadPlaybackPosition
+    | UserTopRead
+    | PlaylistReadCollaborative
+    | PlaylistModifyPublic
+    | PlaylistReadPrivate
+    | PlaylistModifyPrivate
+    | AppRemoteControl
+    | Streaming
+    | UserReadEmail
+    | UserReadPrivate
+    | UserLibraryModify
+    | UserLibraryRead
+    deriving (Eq, Ord, Show, Enum, Bounded)
+allScopes :: Set.Set Scope
+allScopes = Set.fromList enumerate
+showScope :: Scope -> Text
+showScope = \case
+    UgcImageUpload -> "ugc-image-upload"
+    UserModifyPlaybackState -> "user-modify-playback-state"
+    UserReadPlaybackState -> "user-read-playback-state"
+    UserReadCurrentlyPlaying -> "user-read-currently-playing"
+    UserFollowModify -> "user-follow-modify"
+    UserFollowRead -> "user-follow-read"
+    UserReadRecentlyPlayed -> "user-read-recently-played"
+    UserReadPlaybackPosition -> "user-read-playback-position"
+    UserTopRead -> "user-top-read"
+    PlaylistReadCollaborative -> "playlist-read-collaborative"
+    PlaylistModifyPublic -> "playlist-modify-public"
+    PlaylistReadPrivate -> "playlist-read-private"
+    PlaylistModifyPrivate -> "playlist-modify-private"
+    AppRemoteControl -> "app-remote-control"
+    Streaming -> "streaming"
+    UserReadEmail -> "user-read-email"
+    UserReadPrivate -> "user-read-private"
+    UserLibraryModify -> "user-library-modify"
+    UserLibraryRead -> "user-library-read"

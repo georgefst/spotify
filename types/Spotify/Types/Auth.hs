@@ -9,10 +9,10 @@ import Data.String (IsString)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import GHC.Generics (Generic)
-import Servant.API (ToHttpApiData (toUrlPiece))
+import Servant.API (ToHttpApiData (toUrlPiece), FromHttpApiData)
 
 newtype ClientId = ClientId {unwrap :: Text}
-    deriving newtype (Eq, Ord, Show, IsString)
+    deriving newtype (Eq, Ord, Show, IsString, ToHttpApiData)
 
 newtype ClientSecret = ClientSecret {unwrap :: Text}
     deriving newtype (Eq, Ord, Show, IsString)
@@ -25,6 +25,9 @@ instance ToHttpApiData AccessToken where
 
 newtype RefreshToken = RefreshToken {unwrap :: Text}
     deriving newtype (Eq, Ord, Show, IsString)
+    deriving newtype (FromJSON)
+newtype AuthCode = AuthCode {unwrap :: Text}
+    deriving newtype (Eq, Ord, Show, IsString, FromHttpApiData)
     deriving newtype (FromJSON)
 
 data IdAndSecret = IdAndSecret ClientId ClientSecret

@@ -29,6 +29,7 @@ import Data.Bifunctor (bimap)
 import Data.Coerce (coerce)
 import Data.Composition ((.:), (.:.))
 import Data.Proxy (Proxy (Proxy))
+import Data.Set (Set)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
@@ -37,9 +38,11 @@ import Network.HTTP.Client (Manager, newManager)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Network.HTTP.Types (Status (statusCode))
 import Servant.API (NoContent (NoContent))
-import Servant.Client (BaseUrl (BaseUrl), ClientError (DecodeFailure, FailureResponse), ClientM, HasClient (Client), Scheme (Http), client, mkClientEnv, responseBody, responseStatusCode, runClientM)
+import Servant.Client (BaseUrl (BaseUrl, baseUrlHost), ClientError (DecodeFailure, FailureResponse), ClientM, HasClient (Client), Scheme (Http), client, mkClientEnv, responseBody, responseStatusCode, runClientM)
+import Servant.Links (allLinks, linkURI)
 import System.Directory (XdgDirectory (XdgConfig), createDirectoryIfMissing, getTemporaryDirectory, getXdgDirectory)
 import System.FilePath ((</>))
+import System.IO (hFlush, stdout)
 
 class MonadIO m => MonadSpotify m where
     getAuth :: m Auth
@@ -180,6 +183,41 @@ newTokenIO a m = runClientM (requestToken a) (mkClientEnv m accountsBase)
         cli @RefreshAccessToken
             (RefreshAccessTokenForm t)
             (IdAndSecret i s)
+newTokenIO' :: MonadIO m => Manager -> ClientId -> ClientSecret -> URL -> AuthCode -> m (Either ClientError TokenResponse')
+newTokenIO' man clientId clientSecret redirectURI authCode =
+    liftIO $
+        runClientM
+            ( cli @RequestAccessToken
+                (RequestAccessTokenForm authCode redirectURI)
+                (IdAndSecret clientId clientSecret)
+            )
+            (mkClientEnv man accountsBase)
+
+-- spotipy-esque
+getAuthCodeInteractive :: ClientId -> URL -> Maybe (Set Scope) -> IO (Maybe AuthCode)
+getAuthCodeInteractive clientId redirectURI scopes = do
+    T.putStrLn $ "Go to this URL: " <> (authorizeUrl clientId redirectURI scopes).unwrap
+    T.putStr "Copy the URL you are redirected to: " >> hFlush stdout
+    fmap AuthCode . T.stripPrefix (redirectURI.unwrap <> "/?code=") <$> T.getLine
+authorizeUrl :: ClientId -> URL -> Maybe (Set Scope) -> URL
+authorizeUrl clientId redirectURI scopes =
+    URL $
+        "https://"
+            <> T.pack
+                ( baseUrlHost accountsBase
+                    <> "/"
+                    <> show (linkURI link)
+                )
+  where
+    link =
+        allLinks
+            (Proxy @Authorize)
+            clientId
+            "code"
+            redirectURI
+            Nothing
+            (ScopeSet <$> scopes)
+            Nothing
 
 getAlbum :: MonadSpotify m => AlbumID -> m Album
 getAlbum a = inSpot $ cli @GetAlbum a marketFromToken
