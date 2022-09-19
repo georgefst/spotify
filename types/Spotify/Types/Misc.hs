@@ -133,6 +133,13 @@ data Product
     deriving (Eq, Ord, Show, Generic)
     deriving (FromJSON) via CustomJSON Product
 
+data Offset = Offset
+    { position :: Int
+    , uri :: Maybe URI
+    }
+    deriving (Eq, Ord, Show, Generic)
+    deriving (ToJSON)
+
 newtype Market = Market {unwrap :: Text}
     deriving newtype (Eq, Ord, Show, ToHttpApiData, IsString)
 
@@ -147,6 +154,8 @@ class ToURI a where
 newtype URIPrefix (s :: Symbol) a = URIPrefix a
 instance (KnownSymbol s, HasField "unwrap" a Text) => ToURI (URIPrefix s a) where
     toURI (URIPrefix x) = URI $ "spotify:" <> T.pack (symbolVal (Proxy @s)) <> ":" <> x.unwrap
+newtype DeviceID = DeviceID {unwrap :: Text}
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
 newtype AlbumID = AlbumID {unwrap :: Text}
     deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
     deriving (ToURI) via URIPrefix "album" AlbumID

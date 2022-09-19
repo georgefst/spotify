@@ -4,6 +4,7 @@ import Spotify.Servant.Albums
 import Spotify.Servant.Artists
 import Spotify.Servant.Categories
 import Spotify.Servant.Core
+import Spotify.Servant.Player
 import Spotify.Servant.Playlists
 import Spotify.Servant.Tracks
 import Spotify.Servant.Users
@@ -12,6 +13,7 @@ import Spotify.Types.Artists
 import Spotify.Types.Auth
 import Spotify.Types.Categories
 import Spotify.Types.Misc
+import Spotify.Types.Player
 import Spotify.Types.Playlists
 import Spotify.Types.Simple
 import Spotify.Types.Tracks
@@ -257,6 +259,25 @@ createPlaylist u opts = inSpot $ cli @CreatePlaylist u opts
 
 getCategories :: MonadSpotify m => CategoryID -> Maybe Country -> Maybe Locale -> m Category
 getCategories = inSpot .:. cli @GetCategories
+
+getPlaybackState :: MonadSpotify m => Maybe Market -> m PlaybackState
+getPlaybackState = inSpot . cli @GetPlaybackState
+transferPlayback :: MonadSpotify m => [DeviceID] -> Bool -> m ()
+transferPlayback device_ids play = noContent . inSpot $ cli @TransferPlayback TransferPlaybackBody{..}
+getAvailableDevices :: MonadSpotify m => m [Device]
+getAvailableDevices = fmap (.devices) . inSpot $ cli @GetAvailableDevices
+getCurrentlyPlayingTrack :: MonadSpotify m => Maybe Market -> m CurrentlyPlayingTrack
+getCurrentlyPlayingTrack = inSpot . cli @GetCurrentlyPlayingTrack
+startPlayback :: MonadSpotify m => Maybe DeviceID -> StartPlaybackOpts -> m ()
+startPlayback = noContent . inSpot .: cli @StartPlayback
+pausePlayback :: MonadSpotify m => Maybe DeviceID -> m ()
+pausePlayback = noContent . inSpot . cli @PausePlayback
+skipToNext :: MonadSpotify m => Maybe DeviceID -> m ()
+skipToNext = noContent . inSpot . cli @SkipToNext
+skipToPrevious :: MonadSpotify m => Maybe DeviceID -> m ()
+skipToPrevious = noContent . inSpot . cli @SkipToPrevious
+seekToPosition :: MonadSpotify m => Int -> Maybe DeviceID -> m ()
+seekToPosition = noContent . inSpot .: cli @SeekToPosition
 
 -- higher-level wrappers around main API
 -- takes a callback which can be used for side effects, or to return False for early exit

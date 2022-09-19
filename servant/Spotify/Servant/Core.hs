@@ -20,7 +20,10 @@ import Servant.API (
     JSON,
     Post,
     PostCreated,
+    PostNoContent,
     Put,
+    PutAccepted,
+    PutNoContent,
     QueryParam,
     QueryParam',
     ReqBody,
@@ -85,8 +88,11 @@ type AuthHeader = Header' '[Strict, Required] "Authorization" AccessToken
 -- various patterns which appear throughout the API
 type SpotGet a = AuthHeader :> Get '[JSON] a
 type SpotPut a = AuthHeader :> Put '[JSON] a
+type SpotPutAccepted a = AuthHeader :> PutAccepted '[JSON] a
+type SpotPutNoContent = AuthHeader :> PutNoContent
 type SpotPost a = AuthHeader :> Post '[JSON] a
 type SpotPostCreated a = AuthHeader :> PostCreated '[JSON] a
+type SpotPostNoContent = AuthHeader :> PostNoContent
 type SpotDelete a = AuthHeader :> Delete '[JSON] a
 type SpotBody = ReqBody '[JSON]
 type SpotPaging a =
