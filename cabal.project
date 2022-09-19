@@ -1,0 +1,7 @@
+packages: .
+
+--TODO https://github.com/cdepillabout/pretty-simple/pull/107
+source-repository-package
+    type: git
+    location: https://github.com/cdepillabout/pretty-simple
+    tag: 15a67c3d22aa1bb97063058667c0121566e53131

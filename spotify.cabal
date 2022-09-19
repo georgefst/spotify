@@ -126,6 +126,18 @@ executable examples
         spotify-servant,
         spotify,
 
+executable evdev
+    import: common
+    hs-source-dirs: evdev
+    main-is: Main.hs
+    build-depends:
+        spotify-types,
+        spotify-servant,
+        spotify,
+        evdev,
+        evdev-streamly,
+        streamly,
+
 test-suite tests
     import: common
     type: detailed-0.9
