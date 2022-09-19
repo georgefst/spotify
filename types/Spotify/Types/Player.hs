@@ -56,7 +56,7 @@ data Device = Device
 data Context = Context
     { type_ :: Text
     , href :: Href
-    , externalUrls :: ExternalURL
+    , externalUrls :: ExternalURLs
     , uri :: URI
     }
     deriving (Eq, Ord, Show, Generic)

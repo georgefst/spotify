@@ -13,8 +13,8 @@ data Album = Album
     , artists :: [ArtistSimple]
     , availableMarkets :: Maybe [Text]
     , copyrights :: [Copyright]
-    , externalIds :: ExternalID
-    , externalUrls :: ExternalURL
+    , externalIds :: ExternalIDs
+    , externalUrls :: ExternalURLs
     , genres :: [Text]
     , href :: Href
     , id :: AlbumID

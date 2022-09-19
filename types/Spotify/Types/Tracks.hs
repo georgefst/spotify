@@ -16,8 +16,8 @@ data Track = Track
     , discNumber :: Int
     , durationMs :: Int
     , explicit :: Bool
-    , externalIds :: ExternalID
-    , externalUrls :: ExternalURL
+    , externalIds :: ExternalIDs
+    , externalUrls :: ExternalURLs
     , href :: Href
     , id :: TrackID
     , isPlayable :: Maybe Bool

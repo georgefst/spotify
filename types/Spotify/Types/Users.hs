@@ -12,7 +12,7 @@ data User = User
     , displayName :: Maybe Text
     , email :: Maybe Text
     , explicitContent :: Maybe ExplicitContent
-    , externalUrls :: ExternalURL
+    , externalUrls :: ExternalURLs
     , followers :: Maybe Followers
     , href :: Href
     , id :: UserID

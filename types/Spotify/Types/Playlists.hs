@@ -11,7 +11,7 @@ import GHC.Generics (Generic)
 data Playlist = Playlist
     { collaborative :: Bool
     , description :: Maybe Text
-    , externalUrls :: ExternalURL
+    , externalUrls :: ExternalURLs
     , followers :: Followers
     , href :: Href
     , id :: PlaylistID

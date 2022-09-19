@@ -9,7 +9,7 @@ import GHC.Generics (Generic)
 
 data UserSimple = UserSimple
     { displayName :: Maybe Text
-    , externalUrls :: ExternalURL
+    , externalUrls :: ExternalURLs
     , followers :: Maybe Followers
     , href :: Href
     , id :: UserID
@@ -25,7 +25,7 @@ data TrackSimple = TrackSimple
     , discNumber :: Int
     , durationMs :: Int
     , explicit :: Bool
-    , externalUrls :: ExternalURL
+    , externalUrls :: ExternalURLs
     , href :: Href
     , id :: TrackID
     , isPlayable :: Maybe Bool
@@ -42,7 +42,7 @@ data AlbumSimple = AlbumSimple
     { albumType :: AlbumType
     , artists :: [ArtistSimple]
     , availableMarkets :: Maybe [Text]
-    , externalUrls :: ExternalURL
+    , externalUrls :: ExternalURLs
     , albumGroup :: Maybe AlbumGroup
     , href :: Href
     , id :: AlbumID
@@ -57,7 +57,7 @@ data AlbumSimple = AlbumSimple
     deriving (FromJSON) via CustomJSON AlbumSimple
 
 data ArtistSimple = ArtistSimple
-    { externalUrls :: ExternalURL
+    { externalUrls :: ExternalURLs
     , href :: Href
     , id :: ArtistID
     , name :: Text
@@ -68,7 +68,7 @@ data ArtistSimple = ArtistSimple
 
 data PlaylistSimple = PlaylistSimple
     { collaborative :: Bool
-    , externalUrls :: ExternalURL
+    , externalUrls :: ExternalURLs
     , href :: Href
     , id :: PlaylistID
     , images :: [Image]

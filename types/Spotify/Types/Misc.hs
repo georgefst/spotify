@@ -97,7 +97,7 @@ data Key
     deriving (FromJSON) via EnumJSON Key
 
 data TrackLink = TrackLink
-    { externalUrls :: ExternalURL
+    { externalUrls :: ExternalURLs
     , href :: Href
     , id :: TrackID
     , url :: Maybe Text
@@ -199,11 +199,11 @@ newtype Restrictions = Restrictions {unwrap :: Map Text Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON)
 
-newtype ExternalID = ExternalID {unwrap :: Map Text Text}
+newtype ExternalIDs = ExternalIDs {unwrap :: Map Text Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON)
 
-newtype ExternalURL = ExternalURL {unwrap :: Map Text Text}
+newtype ExternalURLs = ExternalURLs {unwrap :: Map Text Text}
     deriving (Show)
     deriving newtype (Eq, Ord, FromJSON)
 

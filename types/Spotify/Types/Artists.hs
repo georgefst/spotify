@@ -8,7 +8,7 @@ import Data.Text (Text)
 import GHC.Generics (Generic)
 
 data Artist = Artist
-    { externalUrls :: ExternalURL
+    { externalUrls :: ExternalURLs
     , followers :: Followers
     , genres :: [Genre]
     , href :: Href
