@@ -36,8 +36,8 @@ import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import GHC.Generics (Generic)
-import Network.HTTP.Client (Manager, newManager)
-import Network.HTTP.Client.TLS (tlsManagerSettings)
+import Network.HTTP.Client (Manager)
+import Network.HTTP.Client.TLS (newTlsManager)
 import Network.HTTP.Types (Status (statusCode))
 import Servant.API (NoContent (NoContent))
 import Servant.Client (BaseUrl (BaseUrl, baseUrlHost), ClientError (DecodeFailure, FailureResponse), ClientM, HasClient (Client), Scheme (Http), client, mkClientEnv, responseBody, responseStatusCode, runClientM)
@@ -70,7 +70,7 @@ instance MonadSpotify IO where
             <$> (RefreshToken <$> getData "refresh" "Refresh token")
             <*> (ClientId <$> getData "id" "Client id")
             <*> (ClientSecret <$> getData "secret" "Client secret")
-    getManager = newManager tlsManagerSettings
+    getManager = newTlsManager
     getToken = do
         path <- monadSpotifyIOTokenPath
         AccessToken <$> T.readFile path <|> do
@@ -107,7 +107,7 @@ runSpotify :: Auth -> Spotify a -> IO (Either ClientError a)
 runSpotify = fmap (fmap fst) .: runSpotify' Nothing Nothing
 runSpotify' :: Maybe Manager -> Maybe AccessToken -> Auth -> Spotify a -> IO (Either ClientError (a, AccessToken))
 runSpotify' mm mt a x = do
-    man <- maybe (newManager tlsManagerSettings) pure mm
+    man <- maybe newTlsManager pure mm
     let tok = maybe (fmap (.accessToken) . liftEither =<< liftIO (newTokenIO a man)) pure mt
     runExceptT $ runReaderT (runStateT x.unwrap =<< tok) (a, man)
 
