@@ -1,5 +1,3 @@
-{- HLINT ignore "Redundant <$>" -}
-
 import Control.Monad.IO.Class
 import Data.Text qualified as T
 import Data.Text.Encoding
@@ -18,8 +16,8 @@ import Text.Pretty.Simple
 
 main :: IO ()
 main =
-    (map T.pack <$> getArgs) >>= \case
-        [devPath, ClientId -> clientId, ClientSecret -> clientSecret, RefreshToken -> refreshToken] -> do
+    getArgs >>= \case
+        (map T.pack -> [devPath, ClientId -> clientId, ClientSecret -> clientSecret, RefreshToken -> refreshToken]) -> do
             dev <- newDevice $ encodeUtf8 devPath
             (pPrint =<<) $ runSpotify Auth{..} $ flip S.mapM_ (hoist liftIO $ readEvents dev) \case
                 Event{eventData} | KeyEvent k Pressed <- eventData -> case k of
