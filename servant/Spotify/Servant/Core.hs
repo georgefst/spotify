@@ -14,6 +14,7 @@ import Data.Text qualified as T
 import GHC.Generics (Generic)
 import Servant.API (
     Delete,
+    DeleteNoContent,
     FormUrlEncoded,
     Get,
     Header',
@@ -94,6 +95,7 @@ type SpotPost a = AuthHeader :> Post '[JSON] a
 type SpotPostCreated a = AuthHeader :> PostCreated '[JSON] a
 type SpotPostNoContent = AuthHeader :> PostNoContent
 type SpotDelete a = AuthHeader :> Delete '[JSON] a
+type SpotDeleteNoContent = AuthHeader :> DeleteNoContent
 type SpotBody = ReqBody '[JSON]
 type SpotPaging a =
     QueryParam "limit" Int

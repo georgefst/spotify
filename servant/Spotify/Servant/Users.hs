@@ -6,7 +6,6 @@ import Spotify.Types.Users
 
 import Servant.API (
     Capture,
-    NoContent,
     type (:>),
  )
 
@@ -23,4 +22,4 @@ type UnfollowPlaylist =
     "playlists"
         :> Capture "playlist_id" PlaylistID
         :> "followers"
-        :> SpotDelete NoContent
+        :> SpotDeleteNoContent

@@ -7,7 +7,6 @@ import Spotify.Types.Simple
 
 import Servant.API (
     Capture,
-    NoContent,
     QueryParam,
     type (:>),
  )
@@ -29,4 +28,4 @@ type RemoveAlbums =
     "me"
         :> "albums"
         :> SpotBody [AlbumID]
-        :> SpotDelete NoContent
+        :> SpotDeleteNoContent
