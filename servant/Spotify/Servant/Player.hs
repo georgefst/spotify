@@ -9,7 +9,6 @@ import Data.Aeson (FromJSON, ToJSON)
 import GHC.Generics (Generic)
 import Servant.API (
     JSON,
-    NoContent,
     QueryParam,
     QueryParam',
     ReqBody,
@@ -28,7 +27,7 @@ type TransferPlayback =
     "me"
         :> "player"
         :> ReqBody '[JSON] TransferPlaybackBody
-        :> SpotPut NoContent
+        :> SpotPutNoContent
 data TransferPlaybackBody = TransferPlaybackBody
     { device_ids :: [DeviceID]
     , play :: Bool
