@@ -119,6 +119,7 @@ executable examples
     hs-source-dirs: examples
     main-is: Main.hs
     other-modules:
+        Spotify.CheckPlaylistOverlap
         Spotify.CreateArtistLikedSongsPlaylist
         Spotify.DeleteRecentPlaylists
     build-depends:

@@ -1,6 +1,7 @@
 module Main (main) where
 
 import Spotify
+import Spotify.CheckPlaylistOverlap qualified
 import Spotify.CreateArtistLikedSongsPlaylist qualified
 import Spotify.DeleteRecentPlaylists qualified
 
@@ -14,6 +15,9 @@ main :: IO ()
 main = do
     example <-
         getArgs >>= \case
+            "CheckPlaylistOverlap" : args -> case args of
+                [fromString -> p1, fromString -> p2] -> pure $ Spotify.CheckPlaylistOverlap.main p1 p2
+                _ -> badArgs
             "CreateArtistLikedSongsPlaylist" : artists ->
                 pure $ Spotify.CreateArtistLikedSongsPlaylist.main $ map fromString artists
             "DeleteRecentPlaylists" : args ->
