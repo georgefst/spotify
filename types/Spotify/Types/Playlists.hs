@@ -3,6 +3,7 @@ module Spotify.Types.Playlists where
 import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Misc
 import Spotify.Types.Simple
+import Spotify.Types.Tracks
 
 import Data.Aeson (FromJSON)
 import Data.Text (Text)
@@ -20,7 +21,7 @@ data Playlist = Playlist
     , owner :: UserSimple
     , public :: Maybe Bool
     , snapshotId :: SnapshotID
-    , tracks :: Tracks
+    , tracks :: Paging SavedTrack
     , uri :: URI
     }
     deriving (Eq, Ord, Show, Generic)
