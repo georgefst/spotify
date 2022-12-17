@@ -235,9 +235,9 @@ getTrack :: MonadSpotify m => TrackID -> m Track
 getTrack t = inSpot $ cli @GetTrack t marketFromToken
 getSavedTracks :: MonadSpotify m => PagingParams -> m (Paging SavedTrack)
 getSavedTracks pps = inSpot $ withPagingParams pps $ cli @GetSavedTracks marketFromToken
-saveTracks :: MonadSpotify f => [TrackID] -> f ()
+saveTracks :: MonadSpotify m => [TrackID] -> m ()
 saveTracks = noContent . inSpot . cli @SaveTracks
-removeTracks :: MonadSpotify f => [TrackID] -> f ()
+removeTracks :: MonadSpotify m => [TrackID] -> m ()
 removeTracks = noContent . inSpot . cli @RemoveTracks
 
 getMe :: MonadSpotify m => m User
