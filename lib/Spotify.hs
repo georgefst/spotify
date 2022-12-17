@@ -253,7 +253,6 @@ addToPlaylist :: MonadSpotify m => PlaylistID -> Maybe Int -> [URI] -> m Text
 addToPlaylist p position uris = fmap coerce $ inSpot $ cli @AddToPlaylist p AddToPlaylistBody{..}
 getMyPlaylists :: MonadSpotify m => PagingParams -> m (Paging PlaylistSimple)
 getMyPlaylists pps = inSpot $ withPagingParams pps $ cli @GetMyPlaylists
-
 createPlaylist :: MonadSpotify m => UserID -> CreatePlaylistOpts -> m PlaylistSimple
 createPlaylist u opts = inSpot $ cli @CreatePlaylist u opts
 
