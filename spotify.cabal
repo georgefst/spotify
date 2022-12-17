@@ -67,6 +67,7 @@ library spotify-types
         Spotify.Types.Albums
         Spotify.Types.Artists
         Spotify.Types.Tracks
+        Spotify.Types.Search
         Spotify.Types.Users
         Spotify.Types.Playlists
         Spotify.Types.Categories
@@ -87,6 +88,7 @@ library spotify-servant
         Spotify.Servant.Albums
         Spotify.Servant.Artists
         Spotify.Servant.Tracks
+        Spotify.Servant.Search
         Spotify.Servant.Users
         Spotify.Servant.Playlists
         Spotify.Servant.Categories

@@ -6,6 +6,7 @@ import Spotify.Servant.Categories
 import Spotify.Servant.Core
 import Spotify.Servant.Player
 import Spotify.Servant.Playlists
+import Spotify.Servant.Search
 import Spotify.Servant.Tracks
 import Spotify.Servant.Users
 import Spotify.Types.Albums
@@ -15,6 +16,7 @@ import Spotify.Types.Categories
 import Spotify.Types.Misc
 import Spotify.Types.Player
 import Spotify.Types.Playlists
+import Spotify.Types.Search
 import Spotify.Types.Simple
 import Spotify.Types.Tracks
 import Spotify.Types.Users
@@ -29,7 +31,7 @@ import Control.Monad.State (MonadState, StateT, get, put, runStateT)
 import Data.Aeson (FromJSON, eitherDecode)
 import Data.Bifunctor (bimap)
 import Data.Coerce (coerce)
-import Data.Composition ((.:), (.:.))
+import Data.Composition ((.:), (.:.), (.:::))
 import Data.Proxy (Proxy (Proxy))
 import Data.Set (Set)
 import Data.Text (Text)
@@ -239,6 +241,9 @@ saveTracks :: MonadSpotify m => [TrackID] -> m ()
 saveTracks = noContent . inSpot . cli @SaveTracks
 removeTracks :: MonadSpotify m => [TrackID] -> m ()
 removeTracks = noContent . inSpot . cli @RemoveTracks
+
+search :: MonadSpotify m => (Text -> [SearchType] -> Maybe Text -> Maybe Int -> Maybe Market -> Maybe Int -> m SearchResult)
+search = inSpot .::: cli @GetSearch
 
 getMe :: MonadSpotify m => m User
 getMe = inSpot $ cli @GetMe
