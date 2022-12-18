@@ -1,4 +1,4 @@
-module Spotify.CreateArtistLikedSongsPlaylist where
+module Spotify.CreateArtistLikedSongsPlaylist (main) where
 
 import Spotify
 import Spotify.Servant.Playlists

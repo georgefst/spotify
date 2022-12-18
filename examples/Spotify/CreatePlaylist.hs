@@ -1,5 +1,5 @@
 {- HLINT ignore "Redundant <$>" -}
-module Spotify.CreatePlaylist where
+module Spotify.CreatePlaylist (main) where
 
 import Spotify
 import Spotify.Servant.Playlists

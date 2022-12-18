@@ -1,4 +1,4 @@
-module Spotify.DeleteRecentPlaylists where
+module Spotify.DeleteRecentPlaylists (main) where
 
 import Spotify
 import Spotify.Types.Misc
