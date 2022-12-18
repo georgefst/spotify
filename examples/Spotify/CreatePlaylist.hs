@@ -51,10 +51,11 @@ main searchType opts = do
             )
             >>= either
                 pure
-                \searched ->
-                    exit . T.unlines $
-                        ("No " <> itemName <> " \"" <> item <> "\" with artist: \"" <> artist <> "\". Found:")
-                            : map (T.intercalate "; " . map (.name) . getResult) searched
+                ( exit
+                    . T.unlines
+                    . (("No " <> itemName <> " \"" <> item <> "\" with artist: \"" <> artist <> "\". Found:") :)
+                    . map (T.intercalate "; " . map (.name) . getResult)
+                )
     playlist <- flip createPlaylist opts . (.id) =<< getMe
     traverse_ (addToPlaylist playlist.id Nothing) =<< chunksOf playlistMaxBatchLimit . concat <$> traverse getUris items
   where
