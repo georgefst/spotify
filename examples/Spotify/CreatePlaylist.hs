@@ -31,16 +31,7 @@ main searchType opts = do
             [a, b] -> pure (a, b)
             _ -> exit "parse failure"
     items <- for parsedLines \(artist, item) ->
-        ( \(searched, res) ->
-            maybe
-                ( exit . T.unlines $
-                    ("Couldn't find " <> itemName <> " \"" <> item <> "\" with artist: \"" <> artist <> "\". Found:")
-                        : map (T.intercalate "; " . map (.name) . getResult) searched
-                )
-                pure
-                res
-        )
-            =<< (runStateT @(Maybe a))
+            (runStateT @(Maybe a))
                 ( allPages
                     ( Just \p -> do
                         if p.offset > searchLimit
@@ -54,6 +45,15 @@ main searchType opts = do
                     )
                 )
                 Nothing
+        >>= ( \(searched, res) ->
+            maybe
+                ( exit . T.unlines $
+                    ("Couldn't find " <> itemName <> " \"" <> item <> "\" with artist: \"" <> artist <> "\". Found:")
+                        : map (T.intercalate "; " . map (.name) . getResult) searched
+                )
+                pure
+                res
+        )
     playlist <- flip createPlaylist opts . (.id) =<< getMe
     void $ addToPlaylist playlist.id Nothing . concat =<< traverse getUris items
   where
