@@ -11,7 +11,7 @@ import Spotify.Types.Tracks
 import Spotify.Types.Users
 
 import Control.Monad (void, (<=<))
-import Control.Monad.State (MonadIO (liftIO), MonadState (put), MonadTrans (lift), execStateT)
+import Control.Monad.State (MonadIO (liftIO), MonadState (put), MonadTrans (lift), runStateT)
 import Data.List (find)
 import Data.Text (Text)
 import Data.Text qualified as T
@@ -31,8 +31,16 @@ main searchType opts = do
             [a, b] -> pure (a, b)
             _ -> exit "parse failure"
     items <- for parsedLines \(artist, item) ->
-        maybe (exit "not found") pure
-            =<< (execStateT @_ @(Maybe a))
+        ( \(searched, res) ->
+            maybe
+                ( exit . T.unlines $
+                    ("Couldn't find " <> itemName <> " \"" <> item <> "\" with artist: \"" <> artist <> "\". Found:")
+                        : map (T.intercalate "; " . map (.name) . getResult) searched
+                )
+                pure
+                res
+        )
+            =<< (runStateT @(Maybe a))
                 ( allPages
                     ( Just \p -> do
                         if p.offset > searchLimit
