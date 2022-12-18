@@ -31,29 +31,28 @@ main searchType opts = do
             [a, b] -> pure (a, b)
             _ -> exit "parse failure"
     items <- for parsedLines \(artist, item) ->
-            (runStateT @(Maybe a))
-                ( allPages
-                    ( Just \p -> do
-                        if p.offset > searchLimit
-                            then pure False
-                            else case find ((artist `elem`) . map (.name) . getResult) p.items of
-                                Just t -> put (Just t) >> pure True
-                                Nothing -> pure False
-                    )
-                    ( maybe (exit $ "no " <> itemName <> "s") pure . extractItems
-                        <=< lift . search item [searchType] Nothing Nothing
-                    )
+        runStateT @(Maybe a)
+            ( allPages
+                ( Just \p -> do
+                    if p.offset > searchLimit
+                        then pure False
+                        else case find ((artist `elem`) . map (.name) . getResult) p.items of
+                            Just t -> put (Just t) >> pure True
+                            Nothing -> pure False
                 )
-                Nothing
-        >>= ( \(searched, res) ->
-            maybe
-                ( exit . T.unlines $
-                    ("Couldn't find " <> itemName <> " \"" <> item <> "\" with artist: \"" <> artist <> "\". Found:")
-                        : map (T.intercalate "; " . map (.name) . getResult) searched
+                ( maybe (exit $ "no " <> itemName <> "s") pure . extractItems
+                    <=< lift . search item [searchType] Nothing Nothing
                 )
-                pure
-                res
-        )
+            )
+            Nothing
+            >>= \(searched, res) ->
+                maybe
+                    ( exit . T.unlines $
+                        ("Couldn't find " <> itemName <> " \"" <> item <> "\" with artist: \"" <> artist <> "\". Found:")
+                            : map (T.intercalate "; " . map (.name) . getResult) searched
+                    )
+                    pure
+                    res
     playlist <- flip createPlaylist opts . (.id) =<< getMe
     void $ addToPlaylist playlist.id Nothing . concat =<< traverse getUris items
   where
