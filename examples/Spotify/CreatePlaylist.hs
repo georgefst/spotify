@@ -39,8 +39,8 @@ main searchType opts = do
                     if p.offset > searchLimit
                         then pure False
                         else case find ((artist `elem`) . map (.name) . getResult) p.items of
-                            Just t -> put (Just t) >> pure True
-                            Nothing -> pure False
+                            Just t -> put (Just t) >> pure False
+                            Nothing -> pure True
                 )
                 ( maybe (exit $ "no " <> itemName <> "s") pure . extractItems
                     <=< lift . search (T.unwords [item, artist]) [searchType] Nothing Nothing
