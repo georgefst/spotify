@@ -24,9 +24,10 @@ main = do
             "CreateArtistLikedSongsPlaylist" : artists ->
                 pure $ Spotify.CreateArtistLikedSongsPlaylist.main $ map fromString artists
             "CreatePlaylist" : args -> case args of
-                [T.pack -> name, readMaybe -> Just public, readMaybe -> Just collaborative, T.pack -> description] ->
+                [readMaybe . (<> "Search") -> Just searchType, T.pack -> name, readMaybe -> Just public, readMaybe -> Just collaborative, T.pack -> description] ->
                     pure $
                         Spotify.CreatePlaylist.main
+                            searchType
                             CreatePlaylistOpts
                                 { name
                                 , public

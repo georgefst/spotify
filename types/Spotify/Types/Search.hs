@@ -19,7 +19,7 @@ data SearchType
     | ShowSearch
     | EpisodeSearch
     | AudiobookSearch
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Show, Read, Generic)
 instance ToHttpApiData [SearchType] where
     toUrlPiece =
         T.intercalate "," . map \case
