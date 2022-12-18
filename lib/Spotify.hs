@@ -242,7 +242,7 @@ saveTracks = noContent . inSpot . cli @SaveTracks
 removeTracks :: MonadSpotify m => [TrackID] -> m ()
 removeTracks = noContent . inSpot . cli @RemoveTracks
 
-search :: MonadSpotify m => (Text -> [SearchType] -> Maybe Text -> Maybe Int -> Maybe Market -> Maybe Int -> m SearchResult)
+search :: MonadSpotify m => Text -> [SearchType] -> Maybe Text -> Maybe Int -> Maybe Market -> Maybe Int -> m SearchResult
 search = inSpot .::: cli @GetSearch
 
 getMe :: MonadSpotify m => m User
