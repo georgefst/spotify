@@ -3,9 +3,12 @@ module Main (main) where
 import Spotify
 import Spotify.CheckPlaylistOverlap qualified
 import Spotify.CreateArtistLikedSongsPlaylist qualified
+import Spotify.CreatePlaylist qualified
 import Spotify.DeleteRecentPlaylists qualified
+import Spotify.Servant.Playlists (CreatePlaylistOpts (..))
 
 import Data.String (fromString)
+import Data.Text qualified as T
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import Text.Pretty.Simple (pPrintForceColor)
@@ -20,6 +23,17 @@ main = do
                 _ -> badArgs
             "CreateArtistLikedSongsPlaylist" : artists ->
                 pure $ Spotify.CreateArtistLikedSongsPlaylist.main $ map fromString artists
+            "CreatePlaylist" : args -> case args of
+                [T.pack -> name, readMaybe -> Just public, readMaybe -> Just collaborative, T.pack -> description] ->
+                    pure $
+                        Spotify.CreatePlaylist.main
+                            CreatePlaylistOpts
+                                { name
+                                , public
+                                , collaborative
+                                , description
+                                }
+                _ -> badArgs
             "DeleteRecentPlaylists" : args ->
                 case args of
                     [readMaybe -> Just time] -> pure $ Spotify.DeleteRecentPlaylists.main time

@@ -123,6 +123,7 @@ executable examples
     other-modules:
         Spotify.CheckPlaylistOverlap
         Spotify.CreateArtistLikedSongsPlaylist
+        Spotify.CreatePlaylist
         Spotify.DeleteRecentPlaylists
     build-depends:
         spotify-types,
