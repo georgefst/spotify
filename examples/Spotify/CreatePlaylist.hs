@@ -13,8 +13,10 @@ import Spotify.Types.Users
 import Control.Monad ((<=<))
 import Control.Monad.State (MonadIO (liftIO), MonadState (put), MonadTrans (lift), runStateT)
 import Data.Foldable (traverse_)
+import Data.Function (on)
 import Data.List (find)
 import Data.List.Extra (chunksOf)
+import Data.Maybe (isJust)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
@@ -38,8 +40,8 @@ main searchType opts = do
                 ( Just \p -> do
                     if p.offset > searchLimit
                         then pure False
-                        else case find ((artist `elem`) . map (.name) . getResult) p.items of
-                            Just t -> put (Just t) >> pure False
+                        else case find (isJust . find (((==) `on` T.toCaseFold) artist) . map (.name) . getResult) p.items of
+                            Just x -> put (Just x) >> pure False
                             Nothing -> pure True
                 )
                 ( maybe (exit $ "no " <> itemName <> "s") pure . extractItems
