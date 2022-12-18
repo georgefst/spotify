@@ -37,7 +37,7 @@ main = do
                 _ -> badArgs
             "DeleteRecentPlaylists" : args ->
                 case args of
-                    [readMaybe -> Just time] -> pure $ Spotify.DeleteRecentPlaylists.main time
+                    [readMaybe -> Just n] -> pure $ Spotify.DeleteRecentPlaylists.main n
                     _ -> badArgs
             x : _ -> putStrLn ("unknown example: " <> x) >> exitFailure
             [] -> putStrLn "no args" >> exitFailure
