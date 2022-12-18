@@ -41,7 +41,7 @@ main searchType opts = do
                             Nothing -> pure False
                 )
                 ( maybe (exit $ "no " <> itemName <> "s") pure . extractItems
-                    <=< lift . search item [searchType] Nothing Nothing
+                    <=< lift . search (T.unwords [item, artist]) [searchType] Nothing Nothing
                 )
             )
             Nothing
