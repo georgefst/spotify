@@ -11,7 +11,8 @@ import Spotify.Types.Tracks
 import Spotify.Types.Users
 
 import Control.Monad ((<=<))
-import Control.Monad.State (MonadIO (liftIO), MonadState (put), MonadTrans (lift), runStateT)
+import Control.Monad.Except (MonadError (throwError), runExceptT)
+import Control.Monad.State (MonadIO (liftIO), MonadTrans (lift))
 import Data.Foldable (traverse_)
 import Data.Function (on)
 import Data.List (find)
@@ -35,28 +36,25 @@ main searchType opts = do
             [a, b] -> pure (a, b)
             _ -> exit "parse failure"
     items <- for parsedLines \(artist, item) ->
-        runStateT @(Maybe a)
+        runExceptT @a -- we actually use this monad to indicate success - it's just a way to return early
             ( allPages
                 ( Just \p -> do
                     if p.offset > searchLimit
                         then pure False
                         else case find (isJust . find (((==) `on` T.toCaseFold) artist) . map (.name) . getResult) p.items of
-                            Just x -> put (Just x) >> pure False
+                            Just t -> throwError t
                             Nothing -> pure True
                 )
                 ( maybe (exit $ "no " <> itemName <> "s") pure . extractItems
                     <=< lift . search (T.unwords [item, artist]) [searchType] Nothing Nothing
                 )
             )
-            Nothing
-            >>= \(searched, res) ->
-                maybe
-                    ( exit . T.unlines $
+            >>= either
+                pure
+                \searched ->
+                    exit . T.unlines $
                         ("No " <> itemName <> " \"" <> item <> "\" with artist: \"" <> artist <> "\". Found:")
                             : map (T.intercalate "; " . map (.name) . getResult) searched
-                    )
-                    pure
-                    res
     playlist <- flip createPlaylist opts . (.id) =<< getMe
     traverse_ (addToPlaylist playlist.id Nothing) =<< chunksOf playlistMaxBatchLimit . concat <$> traverse getUris items
   where
