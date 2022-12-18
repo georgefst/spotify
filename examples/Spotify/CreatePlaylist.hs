@@ -10,9 +10,11 @@ import Spotify.Types.Simple
 import Spotify.Types.Tracks
 import Spotify.Types.Users
 
-import Control.Monad (void, (<=<))
+import Control.Monad ((<=<))
 import Control.Monad.State (MonadIO (liftIO), MonadState (put), MonadTrans (lift), runStateT)
+import Data.Foldable (traverse_)
 import Data.List (find)
+import Data.List.Extra (chunksOf)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
@@ -54,8 +56,9 @@ main searchType opts = do
                     pure
                     res
     playlist <- flip createPlaylist opts . (.id) =<< getMe
-    void $ addToPlaylist playlist.id Nothing . concat =<< traverse getUris items
+    traverse_ (addToPlaylist playlist.id Nothing) =<< chunksOf playlistMaxBatchLimit . concat <$> traverse getUris items
   where
+    playlistMaxBatchLimit = 100 -- API won't accept more than this
     exit s = liftIO $ T.putStrLn s >> exitFailure
 
 data SomeSearchTypeInfo where
