@@ -31,7 +31,7 @@ import Control.Monad.State (MonadState, StateT, get, put, runStateT)
 import Data.Aeson (FromJSON, eitherDecode)
 import Data.Bifunctor (bimap)
 import Data.Coerce (coerce)
-import Data.Composition ((.:), (.:.), (.:::))
+import Data.Composition ((.:), (.:.))
 import Data.Proxy (Proxy (Proxy))
 import Data.Set (Set)
 import Data.Text (Text)
@@ -242,8 +242,8 @@ saveTracks = noContent . inSpot . cli @SaveTracks
 removeTracks :: MonadSpotify m => [TrackID] -> m ()
 removeTracks = noContent . inSpot . cli @RemoveTracks
 
-search :: MonadSpotify m => Text -> [SearchType] -> Maybe Text -> Maybe Int -> Maybe Market -> Maybe Int -> m SearchResult
-search = inSpot .::: cli @GetSearch
+search :: MonadSpotify m => Text -> [SearchType] -> Maybe Text -> Maybe Market -> PagingParams -> m SearchResult
+search q t e m = inSpot . flip withPagingParams \limit offset -> cli @GetSearch q t e limit m offset
 
 getMe :: MonadSpotify m => m User
 getMe = inSpot $ cli @GetMe

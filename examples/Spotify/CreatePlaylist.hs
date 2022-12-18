@@ -10,7 +10,7 @@ import Spotify.Types.Simple
 import Spotify.Types.Tracks
 import Spotify.Types.Users
 
-import Control.Monad (void)
+import Control.Monad (void, (<=<))
 import Control.Monad.State (MonadIO (liftIO), MonadState (put), MonadTrans (lift), execStateT)
 import Data.List (find)
 import Data.Text (Text)
@@ -41,9 +41,8 @@ main searchType opts = do
                                 Just t -> put (Just t) >> pure True
                                 Nothing -> pure False
                     )
-                    ( \pp ->
-                        maybe (exit $ "no " <> itemName <> "s") pure . extractItems
-                            =<< lift (search item [searchType] Nothing pp.limit Nothing pp.offset)
+                    ( maybe (exit $ "no " <> itemName <> "s") pure . extractItems
+                        <=< lift . search item [searchType] Nothing Nothing
                     )
                 )
                 Nothing
