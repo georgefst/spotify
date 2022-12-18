@@ -48,7 +48,7 @@ main searchType opts = do
             >>= \(searched, res) ->
                 maybe
                     ( exit . T.unlines $
-                        ("Couldn't find " <> itemName <> " \"" <> item <> "\" with artist: \"" <> artist <> "\". Found:")
+                        ("No " <> itemName <> " \"" <> item <> "\" with artist: \"" <> artist <> "\". Found:")
                             : map (T.intercalate "; " . map (.name) . getResult) searched
                     )
                     pure
