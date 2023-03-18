@@ -1,4 +1,4 @@
-cabal-version:      2.4
+cabal-version:      3.0
 name:               spotify
 version:            0.1.0.0
 author:             George Thomas
@@ -30,12 +30,12 @@ common common
         extra ^>= 1.7.12,
         filepath ^>= 1.4.2,
         monad-loops ^>= 0.4.3,
-        mtl ^>= 2.2.2,
+        mtl ^>= {2.2.2, 2.3},
         pretty-simple ^>= 4.1,
         servant ^>= 0.19,
-        text ^>= 1.2.5,
-        transformers ^>= 0.5.6,
-        time ^>= 1.11.1,
+        text ^>= {1.2.5, 2.0},
+        transformers ^>= {0.5.6, 0.6},
+        time ^>= {1.11.1, 1.12},
         unordered-containers ^>= 0.2.19,
     default-language: GHC2021
     default-extensions:
@@ -98,7 +98,7 @@ library spotify-servant
         Orphans.Servant.Lucid
     build-depends:
         spotify-types,
-        http-api-data ^>= 0.4.3,
+        http-api-data ^>= {0.4.3, 0.5},
         servant-client ^>= 0.19,
         servant-lucid ^>= 0.9,
 
@@ -140,4 +140,4 @@ test-suite tests
         spotify,
         spotify-types,
         spotify-servant,
-        Cabal ^>= 3.6,
+        Cabal ^>= {3.6, 3.8, 3.10},
