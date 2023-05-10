@@ -4,5 +4,5 @@ import Data.Aeson (FromJSON (parseJSON))
 
 newtype EnumJSON a = EnumJSON a
 
-instance Enum a => FromJSON (EnumJSON a) where
+instance (Enum a) => FromJSON (EnumJSON a) where
     parseJSON = fmap (EnumJSON . toEnum @a) . parseJSON

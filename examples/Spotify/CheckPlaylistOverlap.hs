@@ -14,7 +14,7 @@ import Data.Map qualified as Map
 import Data.Text.IO qualified as T
 import Data.Tuple.Extra ((&&&))
 
-main :: MonadSpotify m => PlaylistID -> PlaylistID -> m ()
+main :: (MonadSpotify m) => PlaylistID -> PlaylistID -> m ()
 main =
     curry $
         maybe (putT "No overlap found.") ((putT "Found songs in both playlists:" >>) . traverse_ putT)

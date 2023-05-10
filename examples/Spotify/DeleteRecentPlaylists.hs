@@ -10,7 +10,7 @@ import Data.Text (Text)
 import Data.Text.IO qualified as T
 import System.IO (hFlush, stdout)
 
-main :: MonadSpotify m => Int -> m ()
+main :: (MonadSpotify m) => Int -> m ()
 main n = do
     playlists <- allPages earlyCutoff getMyPlaylists
     for_ (take n playlists) \p -> promptForConfirmation p.name $ unfollowPlaylist p.id
@@ -18,7 +18,7 @@ main n = do
     -- NB. this is just used as an optimisation, to ensure we don't get pages beyond what we need
     earlyCutoff = Just \p -> pure $ p.offset + p.limit < n
 
-promptForConfirmation :: MonadIO m => Text -> m () -> m ()
+promptForConfirmation :: (MonadIO m) => Text -> m () -> m ()
 promptForConfirmation t x = do
     liftIO $ T.putStr (t <> "? [Y/n] ") >> hFlush stdout
     liftIO T.getLine >>= \case

@@ -24,7 +24,7 @@ import Data.Text.IO qualified as T
 import Data.Traversable (for)
 import System.Exit (exitFailure)
 
-main :: MonadSpotify m => SearchType -> CreatePlaylistOpts -> m ()
+main :: (MonadSpotify m) => SearchType -> CreatePlaylistOpts -> m ()
 main searchType opts = do
     SomeSearchTypeInfo @a (itemName, extractItems, getResult, getUris) <- case searchType of
         TrackSearch -> pure $ SomeSearchTypeInfo @Track ("track", (.tracks), (.artists), pure . pure . (.uri))
@@ -67,7 +67,7 @@ data SomeSearchTypeInfo where
         ( Text
         , SearchResult -> Maybe (Paging a)
         , a -> [ArtistSimple]
-        , forall m. MonadSpotify m => a -> m [URI]
+        , forall m. (MonadSpotify m) => a -> m [URI]
         ) ->
         SomeSearchTypeInfo
 

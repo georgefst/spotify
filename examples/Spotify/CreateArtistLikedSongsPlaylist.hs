@@ -16,7 +16,7 @@ import Data.Map qualified as Map
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 
-main :: MonadSpotify m => [ArtistID] -> m ()
+main :: (MonadSpotify m) => [ArtistID] -> m ()
 main artists = do
     allSaved <- allPages (Just logger) getSavedTracks
     let savedTracksByArtist =

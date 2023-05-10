@@ -48,7 +48,7 @@ import System.Directory (XdgDirectory (XdgConfig), createDirectoryIfMissing, get
 import System.FilePath ((</>))
 import System.IO (hFlush, stdout)
 
-class MonadIO m => MonadSpotify m where
+class (MonadIO m) => MonadSpotify m where
     getAuth :: m Auth
     getManager :: m Manager
     getToken :: m AccessToken
@@ -113,10 +113,10 @@ runSpotify' mm mt a x = do
     let tok = maybe (fmap (.accessToken) . liftEither =<< liftIO (newTokenIO a man)) pure mt
     runExceptT $ runReaderT (runStateT x.unwrap =<< tok) (a, man)
 
-liftEitherSpot :: MonadSpotify m => Either ClientError a -> m a
+liftEitherSpot :: (MonadSpotify m) => Either ClientError a -> m a
 liftEitherSpot = either throwClientError pure
 
-inSpot :: forall m a. MonadSpotify m => (AccessToken -> ClientM a) -> m a
+inSpot :: forall m a. (MonadSpotify m) => (AccessToken -> ClientM a) -> m a
 inSpot x = do
     tok <- getToken
     man <- getManager
@@ -162,9 +162,9 @@ mainBase = BaseUrl Http "api.spotify.com" 80 "v1"
 accountsBase = BaseUrl Http "accounts.spotify.com" 80 "api"
 
 -- helpers for wrapping Servant API
-cli :: forall api. HasClient ClientM api => Client ClientM api
+cli :: forall api. (HasClient ClientM api) => Client ClientM api
 cli = client $ Proxy @api
-noContent :: Functor f => f NoContent -> f ()
+noContent :: (Functor f) => f NoContent -> f ()
 noContent = fmap \NoContent -> ()
 marketFromToken :: Maybe Market
 marketFromToken = Just "from_token"
@@ -178,7 +178,7 @@ data PagingParams = PagingParams
 noPagingParams :: PagingParams
 noPagingParams = PagingParams Nothing Nothing
 
-newToken :: MonadSpotify m => m TokenResponse
+newToken :: (MonadSpotify m) => m TokenResponse
 newToken = liftEitherSpot =<< liftIO =<< (newTokenIO <$> getAuth <*> getManager)
 newTokenIO :: Auth -> Manager -> IO (Either ClientError TokenResponse)
 newTokenIO a m = runClientM (requestToken a) (mkClientEnv m accountsBase)
@@ -187,7 +187,7 @@ newTokenIO a m = runClientM (requestToken a) (mkClientEnv m accountsBase)
         cli @RefreshAccessToken
             (RefreshAccessTokenForm t)
             (IdAndSecret i s)
-newTokenIO' :: MonadIO m => Manager -> ClientId -> ClientSecret -> URL -> AuthCode -> m (Either ClientError TokenResponse')
+newTokenIO' :: (MonadIO m) => Manager -> ClientId -> ClientSecret -> URL -> AuthCode -> m (Either ClientError TokenResponse')
 newTokenIO' man clientId clientSecret redirectURI authCode =
     liftIO $
         runClientM
@@ -223,69 +223,69 @@ authorizeUrl clientId redirectURI scopes =
             (ScopeSet <$> scopes)
             Nothing
 
-getAlbum :: MonadSpotify m => AlbumID -> m Album
+getAlbum :: (MonadSpotify m) => AlbumID -> m Album
 getAlbum a = inSpot $ cli @GetAlbum a marketFromToken
-getAlbumTracks :: MonadSpotify m => AlbumID -> PagingParams -> m (Paging TrackSimple)
+getAlbumTracks :: (MonadSpotify m) => AlbumID -> PagingParams -> m (Paging TrackSimple)
 getAlbumTracks a pps = inSpot $ withPagingParams pps $ cli @GetAlbumTracks a marketFromToken
-removeAlbums :: MonadSpotify m => [AlbumID] -> m ()
+removeAlbums :: (MonadSpotify m) => [AlbumID] -> m ()
 removeAlbums = noContent . inSpot . cli @RemoveAlbums
 
-getArtist :: MonadSpotify m => ArtistID -> m Artist
+getArtist :: (MonadSpotify m) => ArtistID -> m Artist
 getArtist = inSpot . cli @GetArtist
 
-getTrack :: MonadSpotify m => TrackID -> m Track
+getTrack :: (MonadSpotify m) => TrackID -> m Track
 getTrack t = inSpot $ cli @GetTrack t marketFromToken
-getSavedTracks :: MonadSpotify m => PagingParams -> m (Paging SavedTrack)
+getSavedTracks :: (MonadSpotify m) => PagingParams -> m (Paging SavedTrack)
 getSavedTracks pps = inSpot $ withPagingParams pps $ cli @GetSavedTracks marketFromToken
-saveTracks :: MonadSpotify m => [TrackID] -> m ()
+saveTracks :: (MonadSpotify m) => [TrackID] -> m ()
 saveTracks = noContent . inSpot . cli @SaveTracks
-removeTracks :: MonadSpotify m => [TrackID] -> m ()
+removeTracks :: (MonadSpotify m) => [TrackID] -> m ()
 removeTracks = noContent . inSpot . cli @RemoveTracks
 
-search :: MonadSpotify m => Text -> [SearchType] -> Maybe Text -> Maybe Market -> PagingParams -> m SearchResult
+search :: (MonadSpotify m) => Text -> [SearchType] -> Maybe Text -> Maybe Market -> PagingParams -> m SearchResult
 search q t e m = inSpot . flip withPagingParams \limit offset -> cli @GetSearch q t e limit m offset
 
-getMe :: MonadSpotify m => m User
+getMe :: (MonadSpotify m) => m User
 getMe = inSpot $ cli @GetMe
-getUser :: MonadSpotify m => UserID -> m User
+getUser :: (MonadSpotify m) => UserID -> m User
 getUser u = inSpot $ cli @GetUser u
-unfollowPlaylist :: MonadSpotify m => PlaylistID -> m ()
+unfollowPlaylist :: (MonadSpotify m) => PlaylistID -> m ()
 unfollowPlaylist = noContent . inSpot . cli @UnfollowPlaylist
 
-getPlaylist :: MonadSpotify m => PlaylistID -> m Playlist
+getPlaylist :: (MonadSpotify m) => PlaylistID -> m Playlist
 getPlaylist = inSpot . cli @GetPlaylist
-addToPlaylist :: MonadSpotify m => PlaylistID -> Maybe Int -> [URI] -> m Text
+addToPlaylist :: (MonadSpotify m) => PlaylistID -> Maybe Int -> [URI] -> m Text
 addToPlaylist p position uris = fmap coerce $ inSpot $ cli @AddToPlaylist p AddToPlaylistBody{..}
-getMyPlaylists :: MonadSpotify m => PagingParams -> m (Paging PlaylistSimple)
+getMyPlaylists :: (MonadSpotify m) => PagingParams -> m (Paging PlaylistSimple)
 getMyPlaylists pps = inSpot $ withPagingParams pps $ cli @GetMyPlaylists
-createPlaylist :: MonadSpotify m => UserID -> CreatePlaylistOpts -> m PlaylistSimple
+createPlaylist :: (MonadSpotify m) => UserID -> CreatePlaylistOpts -> m PlaylistSimple
 createPlaylist u opts = inSpot $ cli @CreatePlaylist u opts
 
-getCategories :: MonadSpotify m => CategoryID -> Maybe Country -> Maybe Locale -> m Category
+getCategories :: (MonadSpotify m) => CategoryID -> Maybe Country -> Maybe Locale -> m Category
 getCategories = inSpot .:. cli @GetCategories
 
-getPlaybackState :: MonadSpotify m => Maybe Market -> m PlaybackState
+getPlaybackState :: (MonadSpotify m) => Maybe Market -> m PlaybackState
 getPlaybackState = inSpot . cli @GetPlaybackState
-transferPlayback :: MonadSpotify m => [DeviceID] -> Bool -> m ()
+transferPlayback :: (MonadSpotify m) => [DeviceID] -> Bool -> m ()
 transferPlayback device_ids play = noContent . inSpot $ cli @TransferPlayback TransferPlaybackBody{..}
-getAvailableDevices :: MonadSpotify m => m [Device]
+getAvailableDevices :: (MonadSpotify m) => m [Device]
 getAvailableDevices = fmap (.devices) . inSpot $ cli @GetAvailableDevices
-getCurrentlyPlayingTrack :: MonadSpotify m => Maybe Market -> m CurrentlyPlayingTrack
+getCurrentlyPlayingTrack :: (MonadSpotify m) => Maybe Market -> m CurrentlyPlayingTrack
 getCurrentlyPlayingTrack = inSpot . cli @GetCurrentlyPlayingTrack
-startPlayback :: MonadSpotify m => Maybe DeviceID -> StartPlaybackOpts -> m ()
+startPlayback :: (MonadSpotify m) => Maybe DeviceID -> StartPlaybackOpts -> m ()
 startPlayback = noContent . inSpot .: cli @StartPlayback
-pausePlayback :: MonadSpotify m => Maybe DeviceID -> m ()
+pausePlayback :: (MonadSpotify m) => Maybe DeviceID -> m ()
 pausePlayback = noContent . inSpot . cli @PausePlayback
-skipToNext :: MonadSpotify m => Maybe DeviceID -> m ()
+skipToNext :: (MonadSpotify m) => Maybe DeviceID -> m ()
 skipToNext = noContent . inSpot . cli @SkipToNext
-skipToPrevious :: MonadSpotify m => Maybe DeviceID -> m ()
+skipToPrevious :: (MonadSpotify m) => Maybe DeviceID -> m ()
 skipToPrevious = noContent . inSpot . cli @SkipToPrevious
-seekToPosition :: MonadSpotify m => Int -> Maybe DeviceID -> m ()
+seekToPosition :: (MonadSpotify m) => Int -> Maybe DeviceID -> m ()
 seekToPosition = noContent . inSpot .: cli @SeekToPosition
 
 -- higher-level wrappers around main API
 -- takes a callback which can be used for side effects, or to return False for early exit
-allPages :: Monad m => Maybe (Paging a -> m Bool) -> (PagingParams -> m (Paging a)) -> m [a]
+allPages :: (Monad m) => Maybe (Paging a -> m Bool) -> (PagingParams -> m (Paging a)) -> m [a]
 allPages callback x =
     concat <$> flip unfoldrM (0, Nothing, True) \(i, total, keepGoing) -> do
         if keepGoing && maybe True (i <) total
