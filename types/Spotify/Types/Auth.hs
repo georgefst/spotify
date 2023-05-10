@@ -9,7 +9,7 @@ import Data.String (IsString)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import GHC.Generics (Generic)
-import Servant.API (ToHttpApiData (toUrlPiece), FromHttpApiData)
+import Servant.API (FromHttpApiData, ToHttpApiData (toUrlPiece))
 
 newtype ClientId = ClientId {unwrap :: Text}
     deriving newtype (Eq, Ord, Show, IsString, ToHttpApiData)
