@@ -6,6 +6,7 @@ import Spotify.CreateArtistLikedSongsPlaylist qualified
 import Spotify.CreatePlaylist qualified
 import Spotify.DeleteRecentPlaylists qualified
 import Spotify.Servant.Playlists (CreatePlaylistOpts (..))
+import Spotify.TransferPlayback qualified
 
 import Data.String (fromString)
 import Data.Text qualified as T
@@ -38,6 +39,10 @@ main = do
             "DeleteRecentPlaylists" : args ->
                 case args of
                     [readMaybe -> Just n] -> pure $ Spotify.DeleteRecentPlaylists.main n
+                    _ -> badArgs
+            "TransferPlayback" : args ->
+                case args of
+                    [T.pack -> t, readMaybe -> Just b] -> pure $ Spotify.TransferPlayback.main t b
                     _ -> badArgs
             x : _ -> putStrLn ("unknown example: " <> x) >> exitFailure
             [] -> putStrLn "no args" >> exitFailure

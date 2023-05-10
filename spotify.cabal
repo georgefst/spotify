@@ -126,6 +126,7 @@ executable examples
         Spotify.CreateArtistLikedSongsPlaylist
         Spotify.CreatePlaylist
         Spotify.DeleteRecentPlaylists
+        Spotify.TransferPlayback
     build-depends:
         spotify-types,
         spotify-servant,
