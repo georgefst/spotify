@@ -1,5 +1,5 @@
 # Revision history for spotify
 
-## 0.1.0.0 -- 2020-03-18
+## 0.1.0.0 -- 2023-06-22
 
-* First version. Released on an unsuspecting world.
+* First release. Unstable.
