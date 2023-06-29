@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               spotify
-version:            0.1.0.0
+version:            0.1.0.1
 author:             George Thomas
 maintainer:         George Thomas
 description:        Bindings for interacting with the Spotify Web API
@@ -63,6 +63,7 @@ common common
 
 library spotify-types
     import: common
+    visibility: public
     hs-source-dirs: types
     exposed-modules:
         Spotify.Types.Albums
@@ -83,6 +84,7 @@ library spotify-types
 
 library spotify-servant
     import: common
+    visibility: public
     hs-source-dirs: servant
     exposed-modules:
         Spotify.Servant.Core
