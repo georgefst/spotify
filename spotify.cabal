@@ -32,7 +32,7 @@ common common
         monad-loops ^>= 0.4.3,
         mtl ^>= {2.2.2, 2.3},
         pretty-simple ^>= 4.1,
-        servant ^>= 0.19,
+        servant ^>= {0.19, 0.20},
         text ^>= {1.2.5, 2.0},
         transformers ^>= {0.5.6, 0.6},
         time ^>= {1.11.1, 1.12},
@@ -100,8 +100,8 @@ library spotify-servant
         Orphans.Servant.Lucid
     build-depends:
         spotify-types,
-        http-api-data ^>= {0.4.3, 0.5},
-        servant-client ^>= 0.19,
+        http-api-data ^>= {0.4.3, 0.5, 0.6},
+        servant-client ^>= {0.19, 0.20},
         servant-lucid ^>= 0.9,
 
 library
@@ -116,7 +116,7 @@ library
         http-client-tls ^>= 0.3.6,
         http-types ^>= 0.12.3,
         lucid ^>= 2.11,
-        servant-client ^>= 0.19,
+        servant-client ^>= {0.19, 0.20},
         servant-lucid ^>= 0.9,
 
 executable examples
