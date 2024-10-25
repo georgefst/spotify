@@ -32,7 +32,7 @@ main searchType opts = do
         _ -> exit "unsupported search type"
     liftIO $ T.putStrLn $ "Enter lines of artist;" <> itemName
     parsedLines <-
-        (map (T.splitOn ";") . T.lines <$> liftIO T.getContents) >>= traverse \case
+        (map (T.splitOn ";") . filter ((/= Just '#') . fmap fst . T.uncons) . T.lines <$> liftIO T.getContents) >>= traverse \case
             [a, b] -> pure (a, b)
             _ -> exit "parse failure"
     items <- for parsedLines \(artist, item) ->
