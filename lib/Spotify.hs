@@ -62,7 +62,7 @@ instance MonadSpotify IO where
         let getData file prompt =
                 -- look for file - otherwise get from stdin
                 T.readFile path <|> do
-                    res <- T.putStr (prompt <> ": ") >> T.getLine
+                    res <- T.putStr (prompt <> ": ") >> hFlush stdout >> T.getLine
                     createDirectoryIfMissing False dir
                     T.writeFile path res
                     pure res
