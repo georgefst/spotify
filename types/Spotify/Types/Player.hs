@@ -15,9 +15,9 @@ data PlaybackState = PlaybackState
     , shuffleState :: Bool
     , context :: Maybe Context
     , timestamp :: Int64
-    , progressMs :: Int
+    , progressMs :: Maybe Int
     , isPlaying :: Bool
-    , item :: Track
+    , item :: Maybe Track
     , currentlyPlayingType :: Text
     , actions :: Actions
     }
@@ -33,9 +33,9 @@ data Repeat
 data CurrentlyPlayingTrack = CurrentlyPlayingTrack
     { context :: Maybe Context
     , timestamp :: Int64
-    , progressMs :: Int
+    , progressMs :: Maybe Int
     , isPlaying :: Bool
-    , item :: Track
+    , item :: Maybe Track
     , currentlyPlayingType :: Text
     , actions :: Actions
     }
