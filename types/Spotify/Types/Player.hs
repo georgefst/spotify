@@ -12,7 +12,7 @@ data PlaybackState = PlaybackState
     { device :: Device
     , repeatState :: Repeat
     , shuffleState :: Bool
-    , context :: Context
+    , context :: Maybe Context
     , timestamp :: Int
     , progressMs :: Int
     , isPlaying :: Bool
@@ -30,7 +30,7 @@ data Repeat
     deriving (FromJSON) via CustomJSON Repeat
 
 data CurrentlyPlayingTrack = CurrentlyPlayingTrack
-    { context :: Context
+    { context :: Maybe Context
     , timestamp :: Int
     , progressMs :: Int
     , isPlaying :: Bool
