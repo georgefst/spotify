@@ -5,6 +5,7 @@ import Spotify.Types.Misc
 import Spotify.Types.Tracks
 
 import Data.Aeson (FromJSON)
+import Data.Int (Int64)
 import Data.Text (Text)
 import GHC.Generics (Generic)
 
@@ -13,7 +14,7 @@ data PlaybackState = PlaybackState
     , repeatState :: Repeat
     , shuffleState :: Bool
     , context :: Maybe Context
-    , timestamp :: Int
+    , timestamp :: Int64
     , progressMs :: Int
     , isPlaying :: Bool
     , item :: Track
@@ -31,7 +32,7 @@ data Repeat
 
 data CurrentlyPlayingTrack = CurrentlyPlayingTrack
     { context :: Maybe Context
-    , timestamp :: Int
+    , timestamp :: Int64
     , progressMs :: Int
     , isPlaying :: Bool
     , item :: Track
