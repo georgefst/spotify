@@ -228,7 +228,7 @@ getAlbum a = inSpot $ cli @GetAlbum a marketFromToken
 getAlbumTracks :: (MonadSpotify m) => AlbumID -> PagingParams -> m (Paging TrackSimple)
 getAlbumTracks a pps = inSpot $ withPagingParams pps $ cli @GetAlbumTracks a marketFromToken
 removeAlbums :: (MonadSpotify m) => [AlbumID] -> m ()
-removeAlbums = noContent . inSpot . cli @RemoveAlbums
+removeAlbums = noContent . inSpot . cli @RemoveAlbums . SpotIDs
 
 getArtist :: (MonadSpotify m) => ArtistID -> m Artist
 getArtist = inSpot . cli @GetArtist
@@ -238,9 +238,9 @@ getTrack t = inSpot $ cli @GetTrack t marketFromToken
 getSavedTracks :: (MonadSpotify m) => PagingParams -> m (Paging SavedTrack)
 getSavedTracks pps = inSpot $ withPagingParams pps $ cli @GetSavedTracks marketFromToken
 saveTracks :: (MonadSpotify m) => [TrackID] -> m ()
-saveTracks = noContent . inSpot . cli @SaveTracks
+saveTracks = noContent . inSpot . cli @SaveTracks . SpotIDs
 removeTracks :: (MonadSpotify m) => [TrackID] -> m ()
-removeTracks = noContent . inSpot . cli @RemoveTracks
+removeTracks = noContent . inSpot . cli @RemoveTracks . SpotIDs
 
 search :: (MonadSpotify m) => Text -> [SearchType] -> Maybe Text -> Maybe Market -> PagingParams -> m SearchResult
 search q t e m = inSpot . flip withPagingParams \limit offset -> cli @GetSearch q t e limit m offset

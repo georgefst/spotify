@@ -25,11 +25,11 @@ type GetSavedTracks =
 type SaveTracks =
     "me"
         :> "tracks"
-        :> SpotBody [TrackID]
+        :> SpotBody (SpotIDs TrackID)
         :> SpotDeleteNoContent
 
 type RemoveTracks =
     "me"
         :> "tracks"
-        :> SpotBody [TrackID]
+        :> SpotBody (SpotIDs TrackID)
         :> SpotDeleteNoContent

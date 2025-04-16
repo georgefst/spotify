@@ -5,7 +5,7 @@ import Spotify.Types.Auth
 import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Misc
 
-import Data.Aeson (FromJSON)
+import Data.Aeson (FromJSON, ToJSON)
 import Data.HashMap.Strict qualified as HM
 import Data.Set (Set)
 import Data.Set qualified as Set
@@ -97,6 +97,11 @@ type SpotPostNoContent = AuthHeader :> PostNoContent
 type SpotDelete a = AuthHeader :> Delete '[JSON] a
 type SpotDeleteNoContent = AuthHeader :> DeleteNoContent
 type SpotBody = ReqBody '[JSON]
+data SpotIDs a = SpotIDs
+    { ids :: [a]
+    }
+    deriving (Eq, Ord, Show, Generic)
+    deriving (ToJSON)
 type SpotPaging a =
     QueryParam "limit" Int
         :> QueryParam "offset" Int

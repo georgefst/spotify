@@ -27,5 +27,5 @@ type GetAlbumTracks =
 type RemoveAlbums =
     "me"
         :> "albums"
-        :> SpotBody [AlbumID]
+        :> SpotBody (SpotIDs AlbumID)
         :> SpotDeleteNoContent
