@@ -66,6 +66,13 @@ data Paging a = Paging
     deriving (Eq, Ord, Show, Generic)
     deriving (FromJSON) via CustomJSON (Paging a)
 
+data ResumePoint = ResumePoint
+    { fullyPlayed :: Bool
+    , resumePositionMs :: Int
+    }
+    deriving (Eq, Ord, Show, Generic)
+    deriving (FromJSON) via CustomJSON ResumePoint
+
 data Tracks = Tracks
     { href :: Maybe Text
     , total :: Int
@@ -165,6 +172,9 @@ newtype ArtistID = ArtistID {unwrap :: Text}
 newtype EpisodeID = EpisodeID {unwrap :: Text}
     deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
     deriving (ToURI) via URIPrefix "episode" EpisodeID
+newtype ShowID = ShowID {unwrap :: Text}
+    deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
+    deriving (ToURI) via URIPrefix "show" ShowID
 newtype TrackID = TrackID {unwrap :: Text}
     deriving newtype (Eq, Ord, Show, FromJSON, ToJSON, ToHttpApiData, IsString)
     deriving (ToURI) via URIPrefix "track" TrackID

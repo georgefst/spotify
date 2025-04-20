@@ -81,3 +81,24 @@ data PlaylistSimple = PlaylistSimple
     }
     deriving (Eq, Ord, Show, Generic)
     deriving (FromJSON) via CustomJSON PlaylistSimple
+
+data ShowSimple = ShowSimple
+    { availableMarkets :: Maybe [Text]
+    , copyrights :: [Copyright]
+    , description :: Text
+    , htmlDescription :: Text
+    , explicit :: Bool
+    , externalUrls :: ExternalURLs
+    , href :: Href
+    , id :: ShowID
+    , images :: [Image]
+    , isExternallyHosted :: Bool
+    , languages :: [Text]
+    , mediaType :: Text
+    , name :: Text
+    , publisher :: Text
+    , uri :: URI
+    , totalEpisodes :: Int
+    }
+    deriving (Eq, Ord, Show, Generic)
+    deriving (FromJSON) via CustomJSON ShowSimple

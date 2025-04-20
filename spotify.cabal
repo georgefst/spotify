@@ -73,6 +73,7 @@ library spotify-types
         Spotify.Types.Users
         Spotify.Types.Playlists
         Spotify.Types.Categories
+        Spotify.Types.Episodes
         Spotify.Types.Player
         Spotify.Types.Simple
         Spotify.Types.Misc
@@ -95,6 +96,7 @@ library spotify-servant
         Spotify.Servant.Users
         Spotify.Servant.Playlists
         Spotify.Servant.Categories
+        Spotify.Servant.Episodes
         Spotify.Servant.Player
     other-modules:
         Orphans.Servant.Lucid

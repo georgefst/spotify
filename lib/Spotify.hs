@@ -4,6 +4,7 @@ import Spotify.Servant.Albums
 import Spotify.Servant.Artists
 import Spotify.Servant.Categories
 import Spotify.Servant.Core
+import Spotify.Servant.Episodes
 import Spotify.Servant.Player
 import Spotify.Servant.Playlists
 import Spotify.Servant.Search
@@ -13,6 +14,7 @@ import Spotify.Types.Albums
 import Spotify.Types.Artists
 import Spotify.Types.Auth
 import Spotify.Types.Categories
+import Spotify.Types.Episodes
 import Spotify.Types.Misc
 import Spotify.Types.Player
 import Spotify.Types.Playlists
@@ -263,6 +265,15 @@ createPlaylist u opts = inSpot $ cli @CreatePlaylist u opts
 
 getCategories :: (MonadSpotify m) => CategoryID -> Maybe Country -> Maybe Locale -> m Category
 getCategories = inSpot .:. cli @GetCategories
+
+getEpisode :: (MonadSpotify m) => EpisodeID -> m Episode
+getEpisode e = inSpot $ cli @GetEpisode e marketFromToken
+getSavedEpisodes :: (MonadSpotify m) => PagingParams -> m (Paging SavedEpisode)
+getSavedEpisodes pps = inSpot $ withPagingParams pps $ cli @GetSavedEpisodes marketFromToken
+saveEpisodes :: (MonadSpotify m) => [EpisodeID] -> m ()
+saveEpisodes = noContent . inSpot . cli @SaveEpisodes . SpotIDs
+removeEpisodes :: (MonadSpotify m) => [EpisodeID] -> m ()
+removeEpisodes = noContent . inSpot . cli @RemoveEpisodes . SpotIDs
 
 getPlaybackState :: (MonadSpotify m) => Maybe Market -> m PlaybackState
 getPlaybackState = inSpot . cli @GetPlaybackState
