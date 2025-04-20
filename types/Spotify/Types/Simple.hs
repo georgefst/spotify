@@ -92,13 +92,13 @@ data ShowSimple = ShowSimple
     , href :: Href
     , id :: ShowID
     , images :: [Image]
-    , isExternallyHosted :: Bool
+    , isExternallyHosted :: Maybe Bool
     , languages :: [Text]
     , mediaType :: Text
     , name :: Text
     , publisher :: Text
     , uri :: URI
-    , totalEpisodes :: Int
+    , totalEpisodes :: Maybe Int
     }
     deriving (Eq, Ord, Show, Generic)
     deriving (FromJSON) via CustomJSON ShowSimple
