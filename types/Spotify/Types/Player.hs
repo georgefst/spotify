@@ -1,10 +1,12 @@
 module Spotify.Types.Player where
 
+import Data.Function
+import Spotify.Types.Episodes
 import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Misc
 import Spotify.Types.Tracks
 
-import Data.Aeson (FromJSON)
+import Data.Aeson (FromJSON (parseJSON), withObject, (.:))
 import Data.Int (Int64)
 import Data.Text (Text)
 import GHC.Generics (Generic)
@@ -17,7 +19,7 @@ data PlaybackState = PlaybackState
     , timestamp :: Int64
     , progressMs :: Maybe Int
     , isPlaying :: Bool
-    , item :: Maybe Track
+    , item :: Maybe PlaybackItem
     , currentlyPlayingType :: Text
     , actions :: Actions
     }
@@ -41,6 +43,19 @@ data CurrentlyPlayingTrack = CurrentlyPlayingTrack
     }
     deriving (Eq, Ord, Show, Generic)
     deriving (FromJSON) via CustomJSON CurrentlyPlayingTrack
+
+data PlaybackItem
+    = PlaybackItemTrack Track
+    | PlaybackItemEpisode Episode
+    deriving (Eq, Ord, Show, Generic)
+instance FromJSON PlaybackItem where
+    parseJSON v =
+        v & withObject "PlaybackItem" \obj -> do
+            itemType <- obj .: "type"
+            case itemType of
+                "track" -> PlaybackItemTrack <$> parseJSON v
+                "episode" -> PlaybackItemEpisode <$> parseJSON v
+                _ -> fail $ "Unknown item type: " ++ itemType
 
 data Device = Device
     { id :: DeviceID

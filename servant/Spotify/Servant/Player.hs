@@ -6,6 +6,7 @@ import Spotify.Types.Misc
 import Spotify.Types.Player
 
 import Data.Aeson (FromJSON, ToJSON)
+import Data.Text (Text)
 import GHC.Generics (Generic)
 import Servant.API (
     JSON,
@@ -21,6 +22,7 @@ type GetPlaybackState =
     "me"
         :> "player"
         :> QueryParam "market" Market
+        :> QueryParam "additional_types" Text
         :> SpotGet PlaybackState
 
 type TransferPlayback =

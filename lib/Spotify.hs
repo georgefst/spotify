@@ -276,7 +276,7 @@ removeEpisodes :: (MonadSpotify m) => [EpisodeID] -> m ()
 removeEpisodes = noContent . inSpot . cli @RemoveEpisodes . SpotIDs
 
 getPlaybackState :: (MonadSpotify m) => m PlaybackState
-getPlaybackState = inSpot $ cli @GetPlaybackState marketFromToken
+getPlaybackState = inSpot $ cli @GetPlaybackState marketFromToken $ Just "episode"
 transferPlayback :: (MonadSpotify m) => [DeviceID] -> Bool -> m ()
 transferPlayback device_ids play = noContent . inSpot $ cli @TransferPlayback TransferPlaybackBody{..}
 getAvailableDevices :: (MonadSpotify m) => m [Device]
