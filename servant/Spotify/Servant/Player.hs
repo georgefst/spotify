@@ -23,7 +23,7 @@ type GetPlaybackState =
         :> "player"
         :> QueryParam "market" Market
         :> QueryParam "additional_types" Text
-        :> SpotGet PlaybackState
+        :> SpotGetOrNoContent PlaybackState
 
 type TransferPlayback =
     "me"

@@ -6,6 +6,8 @@ import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Misc
 
 import Data.Aeson (FromJSON, ToJSON)
+import Data.Aeson.Types (FromJSON (parseJSON))
+import Data.Data (Proxy (Proxy))
 import Data.HashMap.Strict qualified as HM
 import Data.Set (Set)
 import Data.Set qualified as Set
@@ -19,6 +21,8 @@ import Servant.API (
     Get,
     Header',
     JSON,
+    MimeUnrender,
+    OctetStream,
     Post,
     PostCreated,
     PostNoContent,
@@ -29,11 +33,18 @@ import Servant.API (
     QueryParam',
     ReqBody,
     Required,
+    StdMethod (GET),
     Strict,
     ToHttpApiData (toUrlPiece),
+    UVerb,
+    Union,
+    WithStatus (WithStatus),
+    mimeUnrender,
     type (:>),
  )
+import Servant.API.UVerb (foldMapUnion)
 import Servant.HTML.Lucid (HTML)
+import Spotify.Types.Player
 import Web.FormUrlEncoded (Form (Form), ToForm (toForm))
 
 type Authorize =
@@ -111,3 +122,29 @@ type SpotPaging a =
 newtype ScopeSet = ScopeSet {unwrap :: Set Scope}
 instance ToHttpApiData ScopeSet where
     toUrlPiece = toUrlPiece . T.intercalate " " . map showScope . Set.toList . (.unwrap)
+
+-- TODO this is all a rather elaborate workaround for limitations of `UVerb`
+-- namely that the content-type can't depend on the return code
+-- we'd like to just do something like:
+-- `type SpotGetOrNoContent a = AuthHeader :> UVerb GET '[JSON, NoContent] '[WithStatus 200 a, WithStatus 204 NoContent]`
+-- it's likely we could come up with a more opaque abstraction...
+type SpotGetOrNoContent a = AuthHeader :> UVerb GET '[JSON, OctetStream] '[WithStatus 200 (OctetStreamInstanceWrapper a), WithStatus 204 NoContent']
+data NoContent' = NoContent' deriving (Show)
+instance FromJSON NoContent' where
+    parseJSON _ = fail "dummy instance for SpotGetOrNoContent"
+newtype OctetStreamInstanceWrapper a = OctetStreamInstanceWrapper a
+    deriving newtype (FromJSON)
+instance MimeUnrender OctetStream (OctetStreamInstanceWrapper PlaybackState) where
+    mimeUnrender Proxy _ = Left "dummy instance for SpotGetOrNoContent"
+instance MimeUnrender OctetStream NoContent' where
+    mimeUnrender Proxy = \case
+        "" -> Right NoContent'
+        _ -> Left "unexpected content"
+class HandleJSONOrNoContent a b where
+    handleJSONOrNoContent :: b -> Maybe a
+instance HandleJSONOrNoContent a (WithStatus 200 (OctetStreamInstanceWrapper a)) where
+    handleJSONOrNoContent (WithStatus (OctetStreamInstanceWrapper b)) = Just b
+instance HandleJSONOrNoContent a (WithStatus 204 NoContent') where
+    handleJSONOrNoContent (WithStatus NoContent') = Nothing
+handleAllJSONOrNoContent :: forall a. Union '[WithStatus 200 (OctetStreamInstanceWrapper a), WithStatus 204 NoContent'] -> Maybe a
+handleAllJSONOrNoContent = foldMapUnion (Proxy @(HandleJSONOrNoContent a)) handleJSONOrNoContent
