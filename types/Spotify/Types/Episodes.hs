@@ -19,7 +19,7 @@ data Episode = Episode
     , id :: EpisodeID
     , images :: [Image]
     , isExternallyHosted :: Bool
-    , isPlayable :: Bool
+    , isPlayable :: Maybe Bool
     , languages :: [Text]
     , name :: Text
     , releaseDate :: Text
