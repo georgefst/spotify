@@ -1,0 +1,7 @@
+packages: .
+
+source-repository-package
+    type: git
+    location: https://github.com/haskell-servant/servant
+    tag: 0d679b255080cdb97b4b3c3562ff90b282eec9b5
+    subdir: servant servant-client servant-client-core
