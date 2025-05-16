@@ -29,7 +29,7 @@ import Control.Monad.Except (ExceptT, MonadError, liftEither, runExceptT, throwE
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Loops (unfoldrM)
 import Control.Monad.Reader (MonadReader, ReaderT, asks, runReaderT)
-import Control.Monad.State (MonadState, StateT, get, put, runStateT)
+import Control.Monad.State (MonadState, StateT, evalStateT, get, put)
 import Data.Aeson (FromJSON, eitherDecode)
 import Data.Bifunctor (bimap)
 import Data.Coerce (coerce)
@@ -108,12 +108,10 @@ instance MonadSpotify Spotify where
     throwClientError = throwError
 
 runSpotify :: Auth -> Spotify a -> IO (Either ClientError a)
-runSpotify = fmap (fmap fst) .: runSpotify' Nothing Nothing
-runSpotify' :: Maybe Manager -> Maybe AccessToken -> Auth -> Spotify a -> IO (Either ClientError (a, AccessToken))
-runSpotify' mm mt a x = do
-    man <- maybe newTlsManager pure mm
-    let tok = maybe (fmap (.accessToken) . liftEither =<< liftIO (newTokenIO a man)) pure mt
-    runExceptT $ runReaderT (runStateT x.unwrap =<< tok) (a, man)
+runSpotify auth (Spotify x) = runExceptT do
+    man <- newTlsManager
+    tok <- liftEither =<< liftIO (newTokenIO auth man)
+    runReaderT (evalStateT x tok.accessToken) (auth, man)
 
 liftEitherSpot :: (MonadSpotify m) => Either ClientError a -> m a
 liftEitherSpot = either throwClientError pure
