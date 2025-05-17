@@ -1,11 +1,12 @@
 module Spotify.Servant.Search where
 
-import Spotify.Servant.Core
 import Spotify.Types.Misc
 import Spotify.Types.Search
 
 import Data.Text (Text)
 import Servant.API (
+    Get,
+    JSON,
     QueryParam,
     QueryParam',
     Required,
@@ -21,4 +22,4 @@ type GetSearch =
         :> QueryParam "limit" Int
         :> QueryParam "market" Market
         :> QueryParam "offset" Int
-        :> SpotGet SearchResult
+        :> Get '[JSON] SearchResult

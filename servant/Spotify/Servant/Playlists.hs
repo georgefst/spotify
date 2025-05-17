@@ -11,20 +11,24 @@ import Data.Text (Text)
 import GHC.Generics (Generic)
 import Servant.API (
     Capture,
+    Get,
+    JSON,
+    PostCreated,
+    ReqBody,
     type (:>),
  )
 
 type GetPlaylist =
     "playlists"
         :> Capture "playlist_id" PlaylistID
-        :> SpotGet Playlist
+        :> Get '[JSON] Playlist
 
 type AddToPlaylist =
     "playlists"
         :> Capture "playlist_id" PlaylistID
         :> "tracks"
-        :> SpotBody AddToPlaylistBody
-        :> SpotPostCreated AddToPlaylistResponse
+        :> ReqBody '[JSON] AddToPlaylistBody
+        :> PostCreated '[JSON] AddToPlaylistResponse
 data AddToPlaylistBody = AddToPlaylistBody
     { position :: Maybe Int
     , uris :: [URI]
@@ -46,8 +50,8 @@ type CreatePlaylist =
     "users"
         :> Capture "user_id" UserID
         :> "playlists"
-        :> SpotBody CreatePlaylistOpts
-        :> SpotPostCreated PlaylistSimple
+        :> ReqBody '[JSON] CreatePlaylistOpts
+        :> PostCreated '[JSON] PlaylistSimple
 data CreatePlaylistOpts = CreatePlaylistOpts
     { name :: Text
     , public :: Bool

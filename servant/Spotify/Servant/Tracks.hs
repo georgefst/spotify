@@ -6,7 +6,11 @@ import Spotify.Types.Tracks
 
 import Servant.API (
     Capture,
+    DeleteNoContent,
+    Get,
+    JSON,
     QueryParam,
+    ReqBody,
     type (:>),
  )
 
@@ -14,7 +18,7 @@ type GetTrack =
     "tracks"
         :> Capture "id" TrackID
         :> QueryParam "market" Market
-        :> SpotGet Track
+        :> Get '[JSON] Track
 
 type GetSavedTracks =
     "me"
@@ -25,11 +29,11 @@ type GetSavedTracks =
 type SaveTracks =
     "me"
         :> "tracks"
-        :> SpotBody (SpotIDs TrackID)
-        :> SpotDeleteNoContent
+        :> ReqBody '[JSON] (SpotIDs TrackID)
+        :> DeleteNoContent
 
 type RemoveTracks =
     "me"
         :> "tracks"
-        :> SpotBody (SpotIDs TrackID)
-        :> SpotDeleteNoContent
+        :> ReqBody '[JSON] (SpotIDs TrackID)
+        :> DeleteNoContent

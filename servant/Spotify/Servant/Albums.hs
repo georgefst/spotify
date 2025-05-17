@@ -7,7 +7,11 @@ import Spotify.Types.Simple
 
 import Servant.API (
     Capture,
+    DeleteNoContent,
+    Get,
+    JSON,
     QueryParam,
+    ReqBody,
     type (:>),
  )
 
@@ -15,7 +19,7 @@ type GetAlbum =
     "albums"
         :> Capture "id" AlbumID
         :> QueryParam "market" Market
-        :> SpotGet Album
+        :> Get '[JSON] Album
 
 type GetAlbumTracks =
     "albums"
@@ -27,5 +31,5 @@ type GetAlbumTracks =
 type RemoveAlbums =
     "me"
         :> "albums"
-        :> SpotBody (SpotIDs AlbumID)
-        :> SpotDeleteNoContent
+        :> ReqBody '[JSON] (SpotIDs AlbumID)
+        :> DeleteNoContent

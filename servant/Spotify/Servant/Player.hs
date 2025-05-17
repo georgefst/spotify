@@ -9,7 +9,10 @@ import Data.Aeson (FromJSON, ToJSON)
 import Data.Text (Text)
 import GHC.Generics (Generic)
 import Servant.API (
+    Get,
     JSON,
+    PostNoContent,
+    PutNoContent,
     QueryParam,
     QueryParam',
     ReqBody,
@@ -29,7 +32,7 @@ type TransferPlayback =
     "me"
         :> "player"
         :> ReqBody '[JSON] TransferPlaybackBody
-        :> SpotPutNoContent
+        :> PutNoContent
 data TransferPlaybackBody = TransferPlaybackBody
     { device_ids :: [DeviceID]
     , play :: Bool
@@ -41,7 +44,7 @@ type GetAvailableDevices =
     "me"
         :> "player"
         :> "devices"
-        :> SpotGet GetAvailableDevicesResponse
+        :> Get '[JSON] GetAvailableDevicesResponse
 newtype GetAvailableDevicesResponse = GetAvailableDevicesResponse
     { devices :: [Device]
     }
@@ -53,7 +56,7 @@ type GetCurrentlyPlayingTrack =
         :> "player"
         :> "currently-playing"
         :> QueryParam "market" Market
-        :> SpotGet CurrentlyPlayingTrack
+        :> Get '[JSON] CurrentlyPlayingTrack
 
 type StartPlayback =
     "me"
@@ -61,7 +64,7 @@ type StartPlayback =
         :> "play"
         :> QueryParam "device_id" DeviceID
         :> ReqBody '[JSON] StartPlaybackOpts
-        :> SpotPutNoContent
+        :> PutNoContent
 data StartPlaybackOpts = StartPlaybackOpts
     { context_uri :: Maybe URI
     , uris :: Maybe [URI]
@@ -77,21 +80,21 @@ type PausePlayback =
         :> "player"
         :> "pause"
         :> QueryParam "device_id" DeviceID
-        :> SpotPutNoContent
+        :> PutNoContent
 
 type SkipToNext =
     "me"
         :> "player"
         :> "next"
         :> QueryParam "device_id" DeviceID
-        :> SpotPostNoContent
+        :> PostNoContent
 
 type SkipToPrevious =
     "me"
         :> "player"
         :> "previous"
         :> QueryParam "device_id" DeviceID
-        :> SpotPostNoContent
+        :> PostNoContent
 
 type SeekToPosition =
     "me"
@@ -99,4 +102,4 @@ type SeekToPosition =
         :> "seek"
         :> QueryParam' '[Strict, Required] "position_ms" Int
         :> QueryParam "device_id" DeviceID
-        :> SpotPutNoContent
+        :> PutNoContent

@@ -1,11 +1,12 @@
 module Spotify.Servant.Categories where
 
-import Spotify.Servant.Core
 import Spotify.Types.Categories
 import Spotify.Types.Misc
 
 import Servant.API (
     Capture,
+    Get,
+    JSON,
     QueryParam,
     type (:>),
  )
@@ -16,4 +17,4 @@ type GetCategories =
         :> Capture "category_id" CategoryID
         :> QueryParam "country" Country
         :> QueryParam "locale" Locale
-        :> SpotGet Category
+        :> Get '[JSON] Category

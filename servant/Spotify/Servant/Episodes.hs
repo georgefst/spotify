@@ -6,7 +6,12 @@ import Spotify.Types.Misc
 
 import Servant.API (
     Capture,
+    DeleteNoContent,
+    Get,
+    JSON,
+    PutNoContent,
     QueryParam,
+    ReqBody,
     type (:>),
  )
 
@@ -14,7 +19,7 @@ type GetEpisode =
     "episodes"
         :> Capture "id" EpisodeID
         :> QueryParam "market" Market
-        :> SpotGet Episode
+        :> Get '[JSON] Episode
 
 type GetSavedEpisodes =
     "me"
@@ -25,11 +30,11 @@ type GetSavedEpisodes =
 type SaveEpisodes =
     "me"
         :> "episodes"
-        :> SpotBody (SpotIDs EpisodeID)
-        :> SpotPutNoContent
+        :> ReqBody '[JSON] (SpotIDs EpisodeID)
+        :> PutNoContent
 
 type RemoveEpisodes =
     "me"
         :> "episodes"
-        :> SpotBody (SpotIDs EpisodeID)
-        :> SpotDeleteNoContent
+        :> ReqBody '[JSON] (SpotIDs EpisodeID)
+        :> DeleteNoContent

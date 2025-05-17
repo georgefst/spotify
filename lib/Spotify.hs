@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
+
 module Spotify where
 
 import Spotify.Servant.Albums
@@ -43,8 +45,9 @@ import GHC.Generics (Generic)
 import Network.HTTP.Client (Manager)
 import Network.HTTP.Client.TLS (newTlsManager)
 import Network.HTTP.Types (Status (statusCode))
-import Servant.API (NoContent (NoContent))
-import Servant.Client (BaseUrl (BaseUrl, baseUrlHost), ClientError (DecodeFailure, FailureResponse), ClientM, HasClient (Client), Scheme (Http), client, mkClientEnv, responseBody, responseStatusCode, runClientM)
+import Servant.API (NoContent (NoContent), (:<|>) ((:<|>)), (:>))
+import Servant.API.Flatten (flatten)
+import Servant.Client (BaseUrl (BaseUrl, baseUrlHost), ClientError (DecodeFailure, FailureResponse), ClientM, Scheme (Http), client, mkClientEnv, responseBody, responseStatusCode, runClientM)
 import Servant.Links (allLinks, linkURI)
 import System.Directory (XdgDirectory (XdgConfig), createDirectoryIfMissing, getTemporaryDirectory, getXdgDirectory)
 import System.FilePath ((</>))
@@ -162,8 +165,6 @@ mainBase = BaseUrl Http "api.spotify.com" 80 "v1"
 accountsBase = BaseUrl Http "accounts.spotify.com" 80 "api"
 
 -- helpers for wrapping Servant API
-cli :: forall api. (HasClient ClientM api) => Client ClientM api
-cli = client $ Proxy @api
 noContent :: (Functor f) => f NoContent -> f ()
 noContent = fmap \NoContent -> ()
 marketFromToken :: Maybe Market
@@ -184,14 +185,14 @@ newTokenIO :: Auth -> Manager -> IO (Either ClientError TokenResponse)
 newTokenIO a m = runClientM (requestToken a) (mkClientEnv m accountsBase)
   where
     requestToken (Auth t i s) =
-        cli @RefreshAccessToken
+        refreshAccessToken0
             (RefreshAccessTokenForm t)
             (IdAndSecret i s)
 newTokenIO' :: (MonadIO m) => Manager -> ClientId -> ClientSecret -> URL -> AuthCode -> m (Either ClientError TokenResponse')
 newTokenIO' man clientId clientSecret redirectURI authCode =
     liftIO $
         runClientM
-            ( cli @RequestAccessToken
+            ( requestAccessToken0
                 (RequestAccessTokenForm authCode redirectURI)
                 (IdAndSecret clientId clientSecret)
             )
@@ -223,74 +224,162 @@ authorizeUrl clientId redirectURI scopes =
             (ScopeSet <$> scopes)
             Nothing
 
+refreshAccessToken0
+    :<|> requestAccessToken0 = client $ Proxy @AccountsAPI
+
+type AccountsAPI =
+    RefreshAccessToken
+        :<|> RequestAccessToken
+
+getAlbum0
+    :<|> getAlbumTracks0
+    :<|> removeAlbums0
+    :<|> getArtist0
+    :<|> getCategories0
+    :<|> getEpisode0
+    :<|> getSavedEpisodes0
+    :<|> saveEpisodes0
+    :<|> removeEpisodes0
+    :<|> getPlaybackState0
+    :<|> transferPlayback0
+    :<|> getAvailableDevices0
+    :<|> getCurrentlyPlayingTrack0
+    :<|> startPlayback0
+    :<|> pausePlayback0
+    :<|> skipToNext0
+    :<|> skipToPrevious0
+    :<|> seekToPosition0
+    :<|> getPlaylist0
+    :<|> addToPlaylist0
+    :<|> getMyPlaylists0
+    :<|> createPlaylist0
+    :<|> getSearch0
+    :<|> getTrack0
+    :<|> getSavedTracks0
+    :<|> saveTracks0
+    :<|> removeTracks0
+    :<|> getMe0
+    :<|> getUser0
+    :<|> unfollowPlaylist0 =
+        client (flatten $ Proxy @MainAPI)
+
+type MainAPI =
+    AuthHeader
+        :> ( GetAlbum
+                :<|> GetAlbumTracks
+                :<|> RemoveAlbums
+                :<|> GetArtist
+                :<|> GetCategories
+                :<|> GetEpisode
+                :<|> GetSavedEpisodes
+                :<|> SaveEpisodes
+                :<|> RemoveEpisodes
+                :<|> GetPlaybackState
+                :<|> TransferPlayback
+                :<|> GetAvailableDevices
+                :<|> GetCurrentlyPlayingTrack
+                :<|> StartPlayback
+                :<|> PausePlayback
+                :<|> SkipToNext
+                :<|> SkipToPrevious
+                :<|> SeekToPosition
+                :<|> GetPlaylist
+                :<|> AddToPlaylist
+                :<|> GetMyPlaylists
+                :<|> CreatePlaylist
+                :<|> GetSearch
+                :<|> GetTrack
+                :<|> GetSavedTracks
+                :<|> SaveTracks
+                :<|> RemoveTracks
+                :<|> GetMe
+                :<|> GetUser
+                :<|> UnfollowPlaylist
+           )
+
+flip0 :: (a0 -> b) -> a0 -> b
+flip0 f = f
+flip1 :: (a0 -> a1 -> b) -> a1 -> a0 -> b
+flip1 f = flip0 . flip f
+flip2 :: (a0 -> a1 -> a2 -> b) -> a1 -> a2 -> a0 -> b
+flip2 f = flip1 . flip f
+flip3 :: (a0 -> a1 -> a2 -> a3 -> b) -> a1 -> a2 -> a3 -> a0 -> b
+flip3 f = flip2 . flip f
+flip4 :: (a0 -> a1 -> a2 -> a3 -> a4 -> b) -> a1 -> a2 -> a3 -> a4 -> a0 -> b
+flip4 f = flip3 . flip f
+flip5 :: (a0 -> a1 -> a2 -> a3 -> a4 -> a5 -> b) -> a1 -> a2 -> a3 -> a4 -> a5 -> a0 -> b
+flip5 f = flip4 . flip f
+flip6 :: (a0 -> a1 -> a2 -> a3 -> a4 -> a5 -> a6 -> b) -> a1 -> a2 -> a3 -> a4 -> a5 -> a6 -> a0 -> b
+flip6 f = flip5 . flip f
+
 getAlbum :: (MonadSpotify m) => AlbumID -> m Album
-getAlbum a = inSpot $ cli @GetAlbum a marketFromToken
+getAlbum a = inSpot $ flip2 getAlbum0 a marketFromToken
 getAlbumTracks :: (MonadSpotify m) => AlbumID -> PagingParams -> m (Paging TrackSimple)
-getAlbumTracks a pps = inSpot $ withPagingParams pps $ cli @GetAlbumTracks a marketFromToken
+getAlbumTracks a pps = inSpot $ withPagingParams pps . flip2 getAlbumTracks0 a marketFromToken
 removeAlbums :: (MonadSpotify m) => [AlbumID] -> m ()
-removeAlbums = noContent . inSpot . cli @RemoveAlbums . SpotIDs
+removeAlbums = noContent . inSpot . flip1 removeAlbums0 . SpotIDs
 
 getArtist :: (MonadSpotify m) => ArtistID -> m Artist
-getArtist = inSpot . cli @GetArtist
+getArtist = inSpot . flip1 getArtist0
 
 getTrack :: (MonadSpotify m) => TrackID -> m Track
-getTrack t = inSpot $ cli @GetTrack t marketFromToken
+getTrack t = inSpot $ flip2 getTrack0 t marketFromToken
 getSavedTracks :: (MonadSpotify m) => PagingParams -> m (Paging SavedTrack)
-getSavedTracks pps = inSpot $ withPagingParams pps $ cli @GetSavedTracks marketFromToken
+getSavedTracks pps = inSpot $ withPagingParams pps . flip1 getSavedTracks0 marketFromToken
 saveTracks :: (MonadSpotify m) => [TrackID] -> m ()
-saveTracks = noContent . inSpot . cli @SaveTracks . SpotIDs
+saveTracks = noContent . inSpot . flip1 saveTracks0 . SpotIDs
 removeTracks :: (MonadSpotify m) => [TrackID] -> m ()
-removeTracks = noContent . inSpot . cli @RemoveTracks . SpotIDs
+removeTracks = noContent . inSpot . flip1 removeTracks0 . SpotIDs
 
 search :: (MonadSpotify m) => Text -> [SearchType] -> Maybe Text -> Maybe Market -> PagingParams -> m SearchResult
-search q t e m = inSpot . flip withPagingParams \limit offset -> cli @GetSearch q t e limit m offset
+search q t e m = inSpot . flip withPagingParams \limit offset -> flip6 getSearch0 q t e limit m offset
 
 getMe :: (MonadSpotify m) => m User
-getMe = inSpot $ cli @GetMe
+getMe = inSpot $ flip0 getMe0
 getUser :: (MonadSpotify m) => UserID -> m User
-getUser u = inSpot $ cli @GetUser u
+getUser u = inSpot $ flip1 getUser0 u
 unfollowPlaylist :: (MonadSpotify m) => PlaylistID -> m ()
-unfollowPlaylist = noContent . inSpot . cli @UnfollowPlaylist
+unfollowPlaylist = noContent . inSpot . flip1 unfollowPlaylist0
 
 getPlaylist :: (MonadSpotify m) => PlaylistID -> m Playlist
-getPlaylist = inSpot . cli @GetPlaylist
+getPlaylist = inSpot . flip1 getPlaylist0
 addToPlaylist :: (MonadSpotify m) => PlaylistID -> Maybe Int -> [URI] -> m Text
-addToPlaylist p position uris = fmap coerce $ inSpot $ cli @AddToPlaylist p AddToPlaylistBody{..}
+addToPlaylist p position uris = fmap coerce $ inSpot $ flip2 addToPlaylist0 p AddToPlaylistBody{..}
 getMyPlaylists :: (MonadSpotify m) => PagingParams -> m (Paging PlaylistSimple)
-getMyPlaylists pps = inSpot $ withPagingParams pps $ cli @GetMyPlaylists
+getMyPlaylists pps = inSpot $ withPagingParams pps . flip0 getMyPlaylists0
 createPlaylist :: (MonadSpotify m) => UserID -> CreatePlaylistOpts -> m PlaylistSimple
-createPlaylist u opts = inSpot $ cli @CreatePlaylist u opts
+createPlaylist u opts = inSpot $ flip2 createPlaylist0 u opts
 
 getCategories :: (MonadSpotify m) => CategoryID -> Maybe Country -> Maybe Locale -> m Category
-getCategories = inSpot .:. cli @GetCategories
+getCategories = inSpot .:. flip3 getCategories0
 
 getEpisode :: (MonadSpotify m) => EpisodeID -> m Episode
-getEpisode e = inSpot $ cli @GetEpisode e marketFromToken
+getEpisode e = inSpot $ flip2 getEpisode0 e marketFromToken
 getSavedEpisodes :: (MonadSpotify m) => PagingParams -> m (Paging SavedEpisode)
-getSavedEpisodes pps = inSpot $ withPagingParams pps $ cli @GetSavedEpisodes marketFromToken
+getSavedEpisodes pps = inSpot $ withPagingParams pps $ flip3 getSavedEpisodes0 marketFromToken
 saveEpisodes :: (MonadSpotify m) => [EpisodeID] -> m ()
-saveEpisodes = noContent . inSpot . cli @SaveEpisodes . SpotIDs
+saveEpisodes = noContent . inSpot . flip1 saveEpisodes0 . SpotIDs
 removeEpisodes :: (MonadSpotify m) => [EpisodeID] -> m ()
-removeEpisodes = noContent . inSpot . cli @RemoveEpisodes . SpotIDs
+removeEpisodes = noContent . inSpot . flip1 removeEpisodes0 . SpotIDs
 
 getPlaybackState :: (MonadSpotify m) => m (Maybe PlaybackState)
-getPlaybackState = fmap handleAllJSONOrNoContent $ inSpot $ cli @GetPlaybackState marketFromToken $ Just "episode"
+getPlaybackState = fmap handleAllJSONOrNoContent $ inSpot $ flip2 getPlaybackState0 marketFromToken $ Just "episode"
 transferPlayback :: (MonadSpotify m) => [DeviceID] -> Bool -> m ()
-transferPlayback device_ids play = noContent . inSpot $ cli @TransferPlayback TransferPlaybackBody{..}
+transferPlayback device_ids play = noContent . inSpot $ flip1 transferPlayback0 TransferPlaybackBody{..}
 getAvailableDevices :: (MonadSpotify m) => m [Device]
-getAvailableDevices = fmap (.devices) . inSpot $ cli @GetAvailableDevices
+getAvailableDevices = fmap (.devices) . inSpot $ flip0 getAvailableDevices0
 getCurrentlyPlayingTrack :: (MonadSpotify m) => m CurrentlyPlayingTrack
-getCurrentlyPlayingTrack = inSpot $ cli @GetCurrentlyPlayingTrack marketFromToken
+getCurrentlyPlayingTrack = inSpot $ flip1 getCurrentlyPlayingTrack0 marketFromToken
 startPlayback :: (MonadSpotify m) => Maybe DeviceID -> StartPlaybackOpts -> m ()
-startPlayback = noContent . inSpot .: cli @StartPlayback
+startPlayback = noContent . inSpot .: flip2 startPlayback0
 pausePlayback :: (MonadSpotify m) => Maybe DeviceID -> m ()
-pausePlayback = noContent . inSpot . cli @PausePlayback
+pausePlayback = noContent . inSpot . flip1 pausePlayback0
 skipToNext :: (MonadSpotify m) => Maybe DeviceID -> m ()
-skipToNext = noContent . inSpot . cli @SkipToNext
+skipToNext = noContent . inSpot . flip1 skipToNext0
 skipToPrevious :: (MonadSpotify m) => Maybe DeviceID -> m ()
-skipToPrevious = noContent . inSpot . cli @SkipToPrevious
+skipToPrevious = noContent . inSpot . flip1 skipToPrevious0
 seekToPosition :: (MonadSpotify m) => Int -> Maybe DeviceID -> m ()
-seekToPosition = noContent . inSpot .: cli @SeekToPosition
+seekToPosition = noContent . inSpot .: flip2 seekToPosition0
 
 -- higher-level wrappers around main API
 -- takes a callback which can be used for side effects, or to return False for early exit
