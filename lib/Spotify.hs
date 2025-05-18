@@ -1,7 +1,6 @@
-{-# OPTIONS_GHC -Wno-missing-signatures #-}
-
 module Spotify where
 
+import Spotify.Client
 import Spotify.Servant qualified
 import Spotify.Servant.Core
 import Spotify.Types.Albums
@@ -38,7 +37,6 @@ import Network.HTTP.Client (Manager)
 import Network.HTTP.Client.TLS (newTlsManager)
 import Network.HTTP.Types (Status (statusCode))
 import Servant.API (NoContent (NoContent), (:<|>) ((:<|>)))
-import Servant.API.Flatten (flatten)
 import Servant.Client (BaseUrl (BaseUrl, baseUrlHost), ClientError (DecodeFailure, FailureResponse), ClientM, Scheme (Http), client, mkClientEnv, responseBody, responseStatusCode, runClientM)
 import Servant.Links (allLinks, linkURI)
 import System.Directory (XdgDirectory (XdgConfig), createDirectoryIfMissing, getTemporaryDirectory, getXdgDirectory)
@@ -215,43 +213,6 @@ authorizeUrl clientId redirectURI scopes =
             (ScopeSet <$> scopes)
             Nothing
     _ :<|> _ :<|> link0 = allLinks $ Proxy @Spotify.Servant.AccountsAPI
-
-refreshAccessToken0
-    :<|> requestAccessToken0
-    :<|> authorize0 =
-        client $ Proxy @Spotify.Servant.AccountsAPI
-
-getAlbum0
-    :<|> getAlbumTracks0
-    :<|> removeAlbums0
-    :<|> getArtist0
-    :<|> getCategories0
-    :<|> getEpisode0
-    :<|> getSavedEpisodes0
-    :<|> saveEpisodes0
-    :<|> removeEpisodes0
-    :<|> getPlaybackState0
-    :<|> transferPlayback0
-    :<|> getAvailableDevices0
-    :<|> getCurrentlyPlayingTrack0
-    :<|> startPlayback0
-    :<|> pausePlayback0
-    :<|> skipToNext0
-    :<|> skipToPrevious0
-    :<|> seekToPosition0
-    :<|> getPlaylist0
-    :<|> addToPlaylist0
-    :<|> getMyPlaylists0
-    :<|> createPlaylist0
-    :<|> getSearch0
-    :<|> getTrack0
-    :<|> getSavedTracks0
-    :<|> saveTracks0
-    :<|> removeTracks0
-    :<|> getMe0
-    :<|> getUser0
-    :<|> unfollowPlaylist0 =
-        client (flatten $ Proxy @Spotify.Servant.API)
 
 flip0 :: (a0 -> b) -> a0 -> b
 flip0 f = f
