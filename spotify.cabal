@@ -79,6 +79,7 @@ library spotify-types
         Spotify.Types.Simple
         Spotify.Types.Misc
         Spotify.Types.Auth
+    other-modules:
         Spotify.Types.Internal.CustomJSON
         Spotify.Types.Internal.EnumJSON
     build-depends:
