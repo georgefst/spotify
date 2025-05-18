@@ -27,16 +27,16 @@ instance (Generic a, GFromJSON Zero (Rep a), Typeable a) => FromJSON (CustomJSON
     parseJSON = fmap CustomJSON . genericParseJSON (opts @a)
 opts :: forall a. (Typeable a) => Options
 opts = defaultOptions{constructorTagModifier, fieldLabelModifier}
+  where
+    fieldLabelModifier = camelToSnake . dropWhileEnd (== '_')
+    constructorTagModifier = camelToSnake . (fromMaybe <*> stripPrefix (show $ typeRep @a))
+    camelToSnake = \case
+        [] -> []
+        x : xs -> toLower x : go xs
       where
-        fieldLabelModifier = camelToSnake . dropWhileEnd (== '_')
-        constructorTagModifier = camelToSnake . (fromMaybe <*> stripPrefix (show $ typeRep @a))
-        camelToSnake = \case
+        go = \case
             [] -> []
-            x : xs -> toLower x : go xs
-          where
-            go = \case
-                [] -> []
-                x : xs ->
-                    if isUpper x
-                        then '_' : toLower x : go xs
-                        else x : go xs
+            x : xs ->
+                if isUpper x
+                    then '_' : toLower x : go xs
+                    else x : go xs
