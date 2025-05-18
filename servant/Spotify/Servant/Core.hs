@@ -2,18 +2,12 @@ module Spotify.Servant.Core where
 
 import Orphans.Servant.Lucid ()
 import Spotify.Types.Auth
-import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Misc
 
-import Data.Aeson (FromJSON, ToJSON)
+import Data.Aeson (FromJSON)
 import Data.Aeson.Types (FromJSON (parseJSON))
 import Data.Data (Proxy (Proxy))
-import Data.HashMap.Strict qualified as HM
-import Data.Set (Set)
-import Data.Set qualified as Set
 import Data.Text (Text)
-import Data.Text qualified as T
-import GHC.Generics (Generic)
 import Servant.API (
     FormUrlEncoded,
     Get,
@@ -28,7 +22,6 @@ import Servant.API (
     Required,
     StdMethod (GET),
     Strict,
-    ToHttpApiData (toUrlPiece),
     UVerb,
     Union,
     WithStatus (WithStatus),
@@ -38,7 +31,6 @@ import Servant.API (
 import Servant.API.UVerb (foldMapUnion)
 import Servant.HTML.Lucid (HTML)
 import Spotify.Types.Player
-import Web.FormUrlEncoded (Form (Form), ToForm (toForm))
 
 type Authorize =
     "authorize"
@@ -55,56 +47,19 @@ type RequestAccessToken =
         :> ReqBody '[FormUrlEncoded] RequestAccessTokenForm
         :> Header' '[Strict, Required] "Authorization" IdAndSecret
         :> Post '[JSON] TokenResponse'
-data RequestAccessTokenForm = RequestAccessTokenForm AuthCode URL
-instance ToForm RequestAccessTokenForm where
-    toForm (RequestAccessTokenForm (AuthCode t) r) =
-        Form $
-            HM.fromList
-                [ ("grant_type", ["authorization_code"])
-                , ("code", [t])
-                , ("redirect_uri", [r.unwrap])
-                ]
-data TokenResponse' = TokenResponse'
-    { accessToken :: AccessToken
-    , tokenType :: TokenType
-    , expiresIn :: Int
-    , scope :: Text
-    , refreshToken :: RefreshToken
-    }
-    deriving (Eq, Ord, Show, Generic)
-    deriving (FromJSON) via CustomJSON TokenResponse'
 
 type RefreshAccessToken =
     "token"
         :> ReqBody '[FormUrlEncoded] RefreshAccessTokenForm
         :> Header' '[Strict, Required] "Authorization" IdAndSecret
         :> Post '[JSON] TokenResponse
-newtype RefreshAccessTokenForm = RefreshAccessTokenForm RefreshToken
-instance ToForm RefreshAccessTokenForm where
-    toForm (RefreshAccessTokenForm (RefreshToken t)) =
-        Form $
-            HM.fromList
-                [ ("grant_type", ["refresh_token"])
-                , ("refresh_token", [t])
-                ]
 
 type AuthHeader = Header' '[Strict, Required] "Authorization" AccessToken
-
-data SpotIDs a = SpotIDs
-    { ids :: [a]
-    }
-    deriving (Eq, Ord, Show, Generic)
-    deriving (ToJSON)
 
 type SpotPaging a =
     QueryParam "limit" Int
         :> QueryParam "offset" Int
         :> Get '[JSON] (Paging a)
-
--- types that only exist for the instances
-newtype ScopeSet = ScopeSet {unwrap :: Set Scope}
-instance ToHttpApiData ScopeSet where
-    toUrlPiece = toUrlPiece . T.intercalate " " . map showScope . Set.toList . (.unwrap)
 
 -- TODO this is all a rather elaborate workaround for limitations of `UVerb`
 -- namely that the content-type can't depend on the return code

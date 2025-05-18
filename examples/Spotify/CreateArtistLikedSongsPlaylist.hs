@@ -1,9 +1,9 @@
 module Spotify.CreateArtistLikedSongsPlaylist (main) where
 
 import Spotify
-import Spotify.Servant.Playlists
 import Spotify.Types.Artists
 import Spotify.Types.Misc
+import Spotify.Types.Playlists
 import Spotify.Types.Simple
 import Spotify.Types.Tracks
 import Spotify.Types.Users

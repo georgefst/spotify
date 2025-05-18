@@ -2,9 +2,9 @@
 module Spotify.CreatePlaylist (main) where
 
 import Spotify
-import Spotify.Servant.Playlists
 import Spotify.Types.Albums
 import Spotify.Types.Misc
+import Spotify.Types.Playlists
 import Spotify.Types.Search
 import Spotify.Types.Simple
 import Spotify.Types.Tracks

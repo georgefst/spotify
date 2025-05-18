@@ -1,13 +1,10 @@
 module Spotify.Servant.Player where
 
 import Spotify.Servant.Core
-import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Misc
 import Spotify.Types.Player
 
-import Data.Aeson (FromJSON, ToJSON)
 import Data.Text (Text)
-import GHC.Generics (Generic)
 import Servant.API (
     Get,
     JSON,
@@ -33,23 +30,12 @@ type TransferPlayback =
         :> "player"
         :> ReqBody '[JSON] TransferPlaybackBody
         :> PutNoContent
-data TransferPlaybackBody = TransferPlaybackBody
-    { device_ids :: [DeviceID]
-    , play :: Bool
-    }
-    deriving (Eq, Ord, Show, Generic)
-    deriving (ToJSON)
 
 type GetAvailableDevices =
     "me"
         :> "player"
         :> "devices"
         :> Get '[JSON] GetAvailableDevicesResponse
-newtype GetAvailableDevicesResponse = GetAvailableDevicesResponse
-    { devices :: [Device]
-    }
-    deriving (Eq, Ord, Show, Generic)
-    deriving (FromJSON) via CustomJSON GetAvailableDevicesResponse
 
 type GetCurrentlyPlayingTrack =
     "me"
@@ -65,15 +51,6 @@ type StartPlayback =
         :> QueryParam "device_id" DeviceID
         :> ReqBody '[JSON] StartPlaybackOpts
         :> PutNoContent
-data StartPlaybackOpts = StartPlaybackOpts
-    { context_uri :: Maybe URI
-    , uris :: Maybe [URI]
-    , offset :: Maybe Offset
-    }
-    deriving (Eq, Ord, Show, Generic)
-    deriving (ToJSON)
-emptyStartPlaybackOpts :: StartPlaybackOpts
-emptyStartPlaybackOpts = StartPlaybackOpts Nothing Nothing Nothing
 
 type PausePlayback =
     "me"

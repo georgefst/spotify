@@ -30,11 +30,11 @@ type GetSavedEpisodes =
 type SaveEpisodes =
     "me"
         :> "episodes"
-        :> ReqBody '[JSON] (SpotIDs EpisodeID)
+        :> ReqBody '[JSON] (IDs EpisodeID)
         :> PutNoContent
 
 type RemoveEpisodes =
     "me"
         :> "episodes"
-        :> ReqBody '[JSON] (SpotIDs EpisodeID)
+        :> ReqBody '[JSON] (IDs EpisodeID)
         :> DeleteNoContent

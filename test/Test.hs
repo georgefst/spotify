@@ -3,8 +3,8 @@
 module Test (tests) where
 
 import Spotify
-import Spotify.Servant.Playlists
 import Spotify.Types.Misc
+import Spotify.Types.Playlists
 import Spotify.Types.Simple
 import Spotify.Types.Users
 

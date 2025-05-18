@@ -29,11 +29,11 @@ type GetSavedTracks =
 type SaveTracks =
     "me"
         :> "tracks"
-        :> ReqBody '[JSON] (SpotIDs TrackID)
+        :> ReqBody '[JSON] (IDs TrackID)
         :> DeleteNoContent
 
 type RemoveTracks =
     "me"
         :> "tracks"
-        :> ReqBody '[JSON] (SpotIDs TrackID)
+        :> ReqBody '[JSON] (IDs TrackID)
         :> DeleteNoContent

@@ -6,7 +6,7 @@ import Spotify.Types.Internal.CustomJSON
 import Spotify.Types.Misc
 import Spotify.Types.Tracks
 
-import Data.Aeson (FromJSON (parseJSON), withObject, (.:))
+import Data.Aeson (FromJSON (parseJSON), withObject, (.:), ToJSON)
 import Data.Int (Int64)
 import Data.Text (Text)
 import GHC.Generics (Generic)
@@ -92,3 +92,24 @@ data Actions = Actions
     }
     deriving (Eq, Ord, Show, Generic)
     deriving (FromJSON) via CustomJSON Actions
+
+newtype GetAvailableDevicesResponse = GetAvailableDevicesResponse
+    { devices :: [Device]
+    }
+    deriving (Eq, Ord, Show, Generic)
+    deriving (FromJSON) via CustomJSON GetAvailableDevicesResponse
+
+data TransferPlaybackBody = TransferPlaybackBody
+    { device_ids :: [DeviceID]
+    , play :: Bool
+    }
+    deriving (Eq, Ord, Show, Generic)
+    deriving (ToJSON) via CustomJSON TransferPlaybackBody
+
+data StartPlaybackOpts = StartPlaybackOpts
+    { context_uri :: Maybe URI
+    , uris :: Maybe [URI]
+    , offset :: Maybe Offset
+    }
+    deriving (Eq, Ord, Show, Generic)
+    deriving (ToJSON)

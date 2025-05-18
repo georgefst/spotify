@@ -10,6 +10,7 @@ import Data.Aeson (FromJSON, ToJSON)
 import Data.List.Extra (enumerate)
 import Data.Map (Map)
 import Data.Proxy (Proxy (Proxy))
+import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.String (IsString)
 import Data.Text (Text)
@@ -17,7 +18,7 @@ import Data.Text qualified as T
 import GHC.Generics (Generic)
 import GHC.Records (HasField)
 import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
-import Servant.API (ToHttpApiData)
+import Servant.API (ToHttpApiData, toUrlPiece)
 
 data Copyright = Copyright
     { text :: Text
@@ -261,3 +262,13 @@ showScope = \case
     UserReadPrivate -> "user-read-private"
     UserLibraryModify -> "user-library-modify"
     UserLibraryRead -> "user-library-read"
+
+data IDs a = IDs
+    { ids :: [a]
+    }
+    deriving (Eq, Ord, Show, Generic)
+    deriving (ToJSON)
+
+newtype ScopeSet = ScopeSet {unwrap :: Set Scope}
+instance ToHttpApiData ScopeSet where
+    toUrlPiece = toUrlPiece . T.intercalate " " . map showScope . Set.toList . (.unwrap)

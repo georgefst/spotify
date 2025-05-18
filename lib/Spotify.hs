@@ -320,7 +320,7 @@ getAlbum a = inSpot $ flip2 getAlbum0 a marketFromToken
 getAlbumTracks :: (MonadSpotify m) => AlbumID -> PagingParams -> m (Paging TrackSimple)
 getAlbumTracks a pps = inSpot $ withPagingParams pps . flip2 getAlbumTracks0 a marketFromToken
 removeAlbums :: (MonadSpotify m) => [AlbumID] -> m ()
-removeAlbums = noContent . inSpot . flip1 removeAlbums0 . SpotIDs
+removeAlbums = noContent . inSpot . flip1 removeAlbums0 . IDs
 
 getArtist :: (MonadSpotify m) => ArtistID -> m Artist
 getArtist = inSpot . flip1 getArtist0
@@ -330,9 +330,9 @@ getTrack t = inSpot $ flip2 getTrack0 t marketFromToken
 getSavedTracks :: (MonadSpotify m) => PagingParams -> m (Paging SavedTrack)
 getSavedTracks pps = inSpot $ withPagingParams pps . flip1 getSavedTracks0 marketFromToken
 saveTracks :: (MonadSpotify m) => [TrackID] -> m ()
-saveTracks = noContent . inSpot . flip1 saveTracks0 . SpotIDs
+saveTracks = noContent . inSpot . flip1 saveTracks0 . IDs
 removeTracks :: (MonadSpotify m) => [TrackID] -> m ()
-removeTracks = noContent . inSpot . flip1 removeTracks0 . SpotIDs
+removeTracks = noContent . inSpot . flip1 removeTracks0 . IDs
 
 search :: (MonadSpotify m) => Text -> [SearchType] -> Maybe Text -> Maybe Market -> PagingParams -> m SearchResult
 search q t e m = inSpot . flip withPagingParams \limit offset -> flip6 getSearch0 q t e limit m offset
@@ -361,9 +361,9 @@ getEpisode e = inSpot $ flip2 getEpisode0 e marketFromToken
 getSavedEpisodes :: (MonadSpotify m) => PagingParams -> m (Paging SavedEpisode)
 getSavedEpisodes pps = inSpot $ withPagingParams pps $ flip3 getSavedEpisodes0 marketFromToken
 saveEpisodes :: (MonadSpotify m) => [EpisodeID] -> m ()
-saveEpisodes = noContent . inSpot . flip1 saveEpisodes0 . SpotIDs
+saveEpisodes = noContent . inSpot . flip1 saveEpisodes0 . IDs
 removeEpisodes :: (MonadSpotify m) => [EpisodeID] -> m ()
-removeEpisodes = noContent . inSpot . flip1 removeEpisodes0 . SpotIDs
+removeEpisodes = noContent . inSpot . flip1 removeEpisodes0 . IDs
 
 getPlaybackState :: (MonadSpotify m) => m (Maybe PlaybackState)
 getPlaybackState = fmap handleAllJSONOrNoContent $ inSpot $ flip2 getPlaybackState0 marketFromToken $ Just "episode"

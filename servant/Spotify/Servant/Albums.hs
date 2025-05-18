@@ -31,5 +31,5 @@ type GetAlbumTracks =
 type RemoveAlbums =
     "me"
         :> "albums"
-        :> ReqBody '[JSON] (SpotIDs AlbumID)
+        :> ReqBody '[JSON] (IDs AlbumID)
         :> DeleteNoContent
