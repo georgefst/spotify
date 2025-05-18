@@ -90,6 +90,7 @@ library spotify-servant
     visibility: public
     hs-source-dirs: servant
     exposed-modules:
+        Spotify.Servant
         Spotify.Servant.Core
         Spotify.Servant.Albums
         Spotify.Servant.Artists

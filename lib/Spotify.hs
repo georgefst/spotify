@@ -2,16 +2,8 @@
 
 module Spotify where
 
-import Spotify.Servant.Albums
-import Spotify.Servant.Artists
-import Spotify.Servant.Categories
+import Spotify.Servant qualified
 import Spotify.Servant.Core
-import Spotify.Servant.Episodes
-import Spotify.Servant.Player
-import Spotify.Servant.Playlists
-import Spotify.Servant.Search
-import Spotify.Servant.Tracks
-import Spotify.Servant.Users
 import Spotify.Types.Albums
 import Spotify.Types.Artists
 import Spotify.Types.Auth
@@ -45,7 +37,7 @@ import GHC.Generics (Generic)
 import Network.HTTP.Client (Manager)
 import Network.HTTP.Client.TLS (newTlsManager)
 import Network.HTTP.Types (Status (statusCode))
-import Servant.API (NoContent (NoContent), (:<|>) ((:<|>)), (:>))
+import Servant.API (NoContent (NoContent), (:<|>) ((:<|>)))
 import Servant.API.Flatten (flatten)
 import Servant.Client (BaseUrl (BaseUrl, baseUrlHost), ClientError (DecodeFailure, FailureResponse), ClientM, Scheme (Http), client, mkClientEnv, responseBody, responseStatusCode, runClientM)
 import Servant.Links (allLinks, linkURI)
@@ -222,17 +214,12 @@ authorizeUrl clientId redirectURI scopes =
             Nothing
             (ScopeSet <$> scopes)
             Nothing
-    _ :<|> _ :<|> link0 = allLinks $ Proxy @AccountsAPI
+    _ :<|> _ :<|> link0 = allLinks $ Proxy @Spotify.Servant.AccountsAPI
 
 refreshAccessToken0
     :<|> requestAccessToken0
     :<|> authorize0 =
-        client $ Proxy @AccountsAPI
-
-type AccountsAPI =
-    RefreshAccessToken
-        :<|> RequestAccessToken
-        :<|> Authorize
+        client $ Proxy @Spotify.Servant.AccountsAPI
 
 getAlbum0
     :<|> getAlbumTracks0
@@ -264,41 +251,7 @@ getAlbum0
     :<|> getMe0
     :<|> getUser0
     :<|> unfollowPlaylist0 =
-        client (flatten $ Proxy @MainAPI)
-
-type MainAPI =
-    AuthHeader
-        :> ( GetAlbum
-                :<|> GetAlbumTracks
-                :<|> RemoveAlbums
-                :<|> GetArtist
-                :<|> GetCategories
-                :<|> GetEpisode
-                :<|> GetSavedEpisodes
-                :<|> SaveEpisodes
-                :<|> RemoveEpisodes
-                :<|> GetPlaybackState
-                :<|> TransferPlayback
-                :<|> GetAvailableDevices
-                :<|> GetCurrentlyPlayingTrack
-                :<|> StartPlayback
-                :<|> PausePlayback
-                :<|> SkipToNext
-                :<|> SkipToPrevious
-                :<|> SeekToPosition
-                :<|> GetPlaylist
-                :<|> AddToPlaylist
-                :<|> GetMyPlaylists
-                :<|> CreatePlaylist
-                :<|> GetSearch
-                :<|> GetTrack
-                :<|> GetSavedTracks
-                :<|> SaveTracks
-                :<|> RemoveTracks
-                :<|> GetMe
-                :<|> GetUser
-                :<|> UnfollowPlaylist
-           )
+        client (flatten $ Proxy @Spotify.Servant.API)
 
 flip0 :: (a0 -> b) -> a0 -> b
 flip0 f = f

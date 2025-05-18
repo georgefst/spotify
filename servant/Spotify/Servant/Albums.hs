@@ -12,8 +12,14 @@ import Servant.API (
     JSON,
     QueryParam,
     ReqBody,
+    (:<|>),
     type (:>),
  )
+
+type Albums =
+    GetAlbum
+        :<|> GetAlbumTracks
+        :<|> RemoveAlbums
 
 type GetAlbum =
     "albums"

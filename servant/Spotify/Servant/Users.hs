@@ -8,8 +8,14 @@ import Servant.API (
     DeleteNoContent,
     Get,
     JSON,
+    (:<|>),
     type (:>),
  )
+
+type Users =
+    GetMe
+        :<|> GetUser
+        :<|> UnfollowPlaylist
 
 type GetMe =
     "me"

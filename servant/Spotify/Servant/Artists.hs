@@ -10,6 +10,8 @@ import Servant.API (
     type (:>),
  )
 
+type Artists = GetArtist
+
 type GetArtist =
     "artists"
         :> Capture "id" ArtistID

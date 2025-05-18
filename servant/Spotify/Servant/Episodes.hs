@@ -12,8 +12,15 @@ import Servant.API (
     PutNoContent,
     QueryParam,
     ReqBody,
+    (:<|>),
     type (:>),
  )
+
+type Episodes =
+    GetEpisode
+        :<|> GetSavedEpisodes
+        :<|> SaveEpisodes
+        :<|> RemoveEpisodes
 
 type GetEpisode =
     "episodes"

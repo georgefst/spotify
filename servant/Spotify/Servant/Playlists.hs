@@ -11,8 +11,15 @@ import Servant.API (
     JSON,
     PostCreated,
     ReqBody,
+    (:<|>),
     type (:>),
  )
+
+type Playlists =
+    GetPlaylist
+        :<|> AddToPlaylist
+        :<|> GetMyPlaylists
+        :<|> CreatePlaylist
 
 type GetPlaylist =
     "playlists"

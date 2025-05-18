@@ -11,6 +11,8 @@ import Servant.API (
     type (:>),
  )
 
+type Categories = GetCategories
+
 type GetCategories =
     "browse"
         :> "categories"

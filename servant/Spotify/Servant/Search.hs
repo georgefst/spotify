@@ -14,6 +14,8 @@ import Servant.API (
     type (:>),
  )
 
+type Search = GetSearch
+
 type GetSearch =
     "search"
         :> QueryParam' '[Strict, Required] "q" Text

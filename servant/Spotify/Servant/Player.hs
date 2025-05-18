@@ -15,8 +15,20 @@ import Servant.API (
     ReqBody,
     Required,
     Strict,
+    (:<|>),
     type (:>),
  )
+
+type Player =
+    GetPlaybackState
+        :<|> TransferPlayback
+        :<|> GetAvailableDevices
+        :<|> GetCurrentlyPlayingTrack
+        :<|> StartPlayback
+        :<|> PausePlayback
+        :<|> SkipToNext
+        :<|> SkipToPrevious
+        :<|> SeekToPosition
 
 type GetPlaybackState =
     "me"

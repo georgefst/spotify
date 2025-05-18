@@ -11,8 +11,15 @@ import Servant.API (
     JSON,
     QueryParam,
     ReqBody,
+    (:<|>),
     type (:>),
  )
+
+type Tracks =
+    GetTrack
+        :<|> GetSavedTracks
+        :<|> SaveTracks
+        :<|> RemoveTracks
 
 type GetTrack =
     "tracks"
