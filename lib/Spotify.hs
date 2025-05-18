@@ -215,21 +215,24 @@ authorizeUrl clientId redirectURI scopes =
                 )
   where
     link =
-        allLinks
-            (Proxy @Authorize)
+        link0
             clientId
             "code"
             redirectURI
             Nothing
             (ScopeSet <$> scopes)
             Nothing
+    _ :<|> _ :<|> link0 = allLinks $ Proxy @AccountsAPI
 
 refreshAccessToken0
-    :<|> requestAccessToken0 = client $ Proxy @AccountsAPI
+    :<|> requestAccessToken0
+    :<|> authorize0 =
+        client $ Proxy @AccountsAPI
 
 type AccountsAPI =
     RefreshAccessToken
         :<|> RequestAccessToken
+        :<|> Authorize
 
 getAlbum0
     :<|> getAlbumTracks0
