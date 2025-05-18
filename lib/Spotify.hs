@@ -1,6 +1,6 @@
 module Spotify where
 
-import Spotify.Client
+import Spotify.Client qualified
 import Spotify.Servant qualified
 import Spotify.Servant.Core
 import Spotify.Types.Albums
@@ -37,7 +37,7 @@ import Network.HTTP.Client (Manager)
 import Network.HTTP.Client.TLS (newTlsManager)
 import Network.HTTP.Types (Status (statusCode))
 import Servant.API (NoContent (NoContent), (:<|>) ((:<|>)))
-import Servant.Client (BaseUrl (BaseUrl, baseUrlHost), ClientError (DecodeFailure, FailureResponse), ClientM, Scheme (Http), client, mkClientEnv, responseBody, responseStatusCode, runClientM)
+import Servant.Client (BaseUrl (BaseUrl, baseUrlHost), ClientError (DecodeFailure, FailureResponse), ClientM, Scheme (Http), mkClientEnv, responseBody, responseStatusCode, runClientM)
 import Servant.Links (allLinks, linkURI)
 import System.Directory (XdgDirectory (XdgConfig), createDirectoryIfMissing, getTemporaryDirectory, getXdgDirectory)
 import System.FilePath ((</>))
@@ -175,14 +175,14 @@ newTokenIO :: Auth -> Manager -> IO (Either ClientError TokenResponse)
 newTokenIO a m = runClientM (requestToken a) (mkClientEnv m accountsBase)
   where
     requestToken (Auth t i s) =
-        refreshAccessToken0
+        Spotify.Client.refreshAccessToken
             (RefreshAccessTokenForm t)
             (IdAndSecret i s)
 newTokenIO' :: (MonadIO m) => Manager -> ClientId -> ClientSecret -> URL -> AuthCode -> m (Either ClientError TokenResponse')
 newTokenIO' man clientId clientSecret redirectURI authCode =
     liftIO $
         runClientM
-            ( requestAccessToken0
+            ( Spotify.Client.requestAccessToken
                 (RequestAccessTokenForm authCode redirectURI)
                 (IdAndSecret clientId clientSecret)
             )
@@ -230,73 +230,73 @@ flip6 :: (a0 -> a1 -> a2 -> a3 -> a4 -> a5 -> a6 -> b) -> a1 -> a2 -> a3 -> a4 -
 flip6 f = flip5 . flip f
 
 getAlbum :: (MonadSpotify m) => AlbumID -> m Album
-getAlbum a = inSpot $ flip2 getAlbum0 a marketFromToken
+getAlbum a = inSpot $ flip2 Spotify.Client.getAlbum a marketFromToken
 getAlbumTracks :: (MonadSpotify m) => AlbumID -> PagingParams -> m (Paging TrackSimple)
-getAlbumTracks a pps = inSpot $ withPagingParams pps . flip2 getAlbumTracks0 a marketFromToken
+getAlbumTracks a pps = inSpot $ withPagingParams pps . flip2 Spotify.Client.getAlbumTracks a marketFromToken
 removeAlbums :: (MonadSpotify m) => [AlbumID] -> m ()
-removeAlbums = noContent . inSpot . flip1 removeAlbums0 . IDs
+removeAlbums = noContent . inSpot . flip1 Spotify.Client.removeAlbums . IDs
 
 getArtist :: (MonadSpotify m) => ArtistID -> m Artist
-getArtist = inSpot . flip1 getArtist0
+getArtist = inSpot . flip1 Spotify.Client.getArtist
 
 getTrack :: (MonadSpotify m) => TrackID -> m Track
-getTrack t = inSpot $ flip2 getTrack0 t marketFromToken
+getTrack t = inSpot $ flip2 Spotify.Client.getTrack t marketFromToken
 getSavedTracks :: (MonadSpotify m) => PagingParams -> m (Paging SavedTrack)
-getSavedTracks pps = inSpot $ withPagingParams pps . flip1 getSavedTracks0 marketFromToken
+getSavedTracks pps = inSpot $ withPagingParams pps . flip1 Spotify.Client.getSavedTracks marketFromToken
 saveTracks :: (MonadSpotify m) => [TrackID] -> m ()
-saveTracks = noContent . inSpot . flip1 saveTracks0 . IDs
+saveTracks = noContent . inSpot . flip1 Spotify.Client.saveTracks . IDs
 removeTracks :: (MonadSpotify m) => [TrackID] -> m ()
-removeTracks = noContent . inSpot . flip1 removeTracks0 . IDs
+removeTracks = noContent . inSpot . flip1 Spotify.Client.removeTracks . IDs
 
 search :: (MonadSpotify m) => Text -> [SearchType] -> Maybe Text -> Maybe Market -> PagingParams -> m SearchResult
-search q t e m = inSpot . flip withPagingParams \limit offset -> flip6 getSearch0 q t e limit m offset
+search q t e m = inSpot . flip withPagingParams \limit offset -> flip6 Spotify.Client.getSearch q t e limit m offset
 
 getMe :: (MonadSpotify m) => m User
-getMe = inSpot $ flip0 getMe0
+getMe = inSpot $ flip0 Spotify.Client.getMe
 getUser :: (MonadSpotify m) => UserID -> m User
-getUser u = inSpot $ flip1 getUser0 u
+getUser u = inSpot $ flip1 Spotify.Client.getUser u
 unfollowPlaylist :: (MonadSpotify m) => PlaylistID -> m ()
-unfollowPlaylist = noContent . inSpot . flip1 unfollowPlaylist0
+unfollowPlaylist = noContent . inSpot . flip1 Spotify.Client.unfollowPlaylist
 
 getPlaylist :: (MonadSpotify m) => PlaylistID -> m Playlist
-getPlaylist = inSpot . flip1 getPlaylist0
+getPlaylist = inSpot . flip1 Spotify.Client.getPlaylist
 addToPlaylist :: (MonadSpotify m) => PlaylistID -> Maybe Int -> [URI] -> m Text
-addToPlaylist p position uris = fmap coerce $ inSpot $ flip2 addToPlaylist0 p AddToPlaylistBody{..}
+addToPlaylist p position uris = fmap coerce $ inSpot $ flip2 Spotify.Client.addToPlaylist p AddToPlaylistBody{..}
 getMyPlaylists :: (MonadSpotify m) => PagingParams -> m (Paging PlaylistSimple)
-getMyPlaylists pps = inSpot $ withPagingParams pps . flip0 getMyPlaylists0
+getMyPlaylists pps = inSpot $ withPagingParams pps . flip0 Spotify.Client.getMyPlaylists
 createPlaylist :: (MonadSpotify m) => UserID -> CreatePlaylistOpts -> m PlaylistSimple
-createPlaylist u opts = inSpot $ flip2 createPlaylist0 u opts
+createPlaylist u opts = inSpot $ flip2 Spotify.Client.createPlaylist u opts
 
 getCategories :: (MonadSpotify m) => CategoryID -> Maybe Country -> Maybe Locale -> m Category
-getCategories = inSpot .:. flip3 getCategories0
+getCategories = inSpot .:. flip3 Spotify.Client.getCategories
 
 getEpisode :: (MonadSpotify m) => EpisodeID -> m Episode
-getEpisode e = inSpot $ flip2 getEpisode0 e marketFromToken
+getEpisode e = inSpot $ flip2 Spotify.Client.getEpisode e marketFromToken
 getSavedEpisodes :: (MonadSpotify m) => PagingParams -> m (Paging SavedEpisode)
-getSavedEpisodes pps = inSpot $ withPagingParams pps $ flip3 getSavedEpisodes0 marketFromToken
+getSavedEpisodes pps = inSpot $ withPagingParams pps $ flip3 Spotify.Client.getSavedEpisodes marketFromToken
 saveEpisodes :: (MonadSpotify m) => [EpisodeID] -> m ()
-saveEpisodes = noContent . inSpot . flip1 saveEpisodes0 . IDs
+saveEpisodes = noContent . inSpot . flip1 Spotify.Client.saveEpisodes . IDs
 removeEpisodes :: (MonadSpotify m) => [EpisodeID] -> m ()
-removeEpisodes = noContent . inSpot . flip1 removeEpisodes0 . IDs
+removeEpisodes = noContent . inSpot . flip1 Spotify.Client.removeEpisodes . IDs
 
 getPlaybackState :: (MonadSpotify m) => m (Maybe PlaybackState)
-getPlaybackState = fmap handleAllJSONOrNoContent $ inSpot $ flip2 getPlaybackState0 marketFromToken $ Just "episode"
+getPlaybackState = fmap handleAllJSONOrNoContent $ inSpot $ flip2 Spotify.Client.getPlaybackState marketFromToken $ Just "episode"
 transferPlayback :: (MonadSpotify m) => [DeviceID] -> Bool -> m ()
-transferPlayback device_ids play = noContent . inSpot $ flip1 transferPlayback0 TransferPlaybackBody{..}
+transferPlayback device_ids play = noContent . inSpot $ flip1 Spotify.Client.transferPlayback TransferPlaybackBody{..}
 getAvailableDevices :: (MonadSpotify m) => m [Device]
-getAvailableDevices = fmap (.devices) . inSpot $ flip0 getAvailableDevices0
+getAvailableDevices = fmap (.devices) . inSpot $ flip0 Spotify.Client.getAvailableDevices
 getCurrentlyPlayingTrack :: (MonadSpotify m) => m CurrentlyPlayingTrack
-getCurrentlyPlayingTrack = inSpot $ flip1 getCurrentlyPlayingTrack0 marketFromToken
+getCurrentlyPlayingTrack = inSpot $ flip1 Spotify.Client.getCurrentlyPlayingTrack marketFromToken
 startPlayback :: (MonadSpotify m) => Maybe DeviceID -> StartPlaybackOpts -> m ()
-startPlayback = noContent . inSpot .: flip2 startPlayback0
+startPlayback = noContent . inSpot .: flip2 Spotify.Client.startPlayback
 pausePlayback :: (MonadSpotify m) => Maybe DeviceID -> m ()
-pausePlayback = noContent . inSpot . flip1 pausePlayback0
+pausePlayback = noContent . inSpot . flip1 Spotify.Client.pausePlayback
 skipToNext :: (MonadSpotify m) => Maybe DeviceID -> m ()
-skipToNext = noContent . inSpot . flip1 skipToNext0
+skipToNext = noContent . inSpot . flip1 Spotify.Client.skipToNext
 skipToPrevious :: (MonadSpotify m) => Maybe DeviceID -> m ()
-skipToPrevious = noContent . inSpot . flip1 skipToPrevious0
+skipToPrevious = noContent . inSpot . flip1 Spotify.Client.skipToPrevious
 seekToPosition :: (MonadSpotify m) => Int -> Maybe DeviceID -> m ()
-seekToPosition = noContent . inSpot .: flip2 seekToPosition0
+seekToPosition = noContent . inSpot .: flip2 Spotify.Client.seekToPosition
 
 -- higher-level wrappers around main API
 -- takes a callback which can be used for side effects, or to return False for early exit

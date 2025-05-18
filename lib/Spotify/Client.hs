@@ -10,39 +10,39 @@ import Servant.API (type (:<|>) ((:<|>)))
 import Servant.API.Flatten (flatten)
 import Servant.Client (client)
 
-getAlbum0
-    :<|> getAlbumTracks0
-    :<|> removeAlbums0
-    :<|> getArtist0
-    :<|> getCategories0
-    :<|> getEpisode0
-    :<|> getSavedEpisodes0
-    :<|> saveEpisodes0
-    :<|> removeEpisodes0
-    :<|> getPlaybackState0
-    :<|> transferPlayback0
-    :<|> getAvailableDevices0
-    :<|> getCurrentlyPlayingTrack0
-    :<|> startPlayback0
-    :<|> pausePlayback0
-    :<|> skipToNext0
-    :<|> skipToPrevious0
-    :<|> seekToPosition0
-    :<|> getPlaylist0
-    :<|> addToPlaylist0
-    :<|> getMyPlaylists0
-    :<|> createPlaylist0
-    :<|> getSearch0
-    :<|> getTrack0
-    :<|> getSavedTracks0
-    :<|> saveTracks0
-    :<|> removeTracks0
-    :<|> getMe0
-    :<|> getUser0
-    :<|> unfollowPlaylist0 =
+getAlbum
+    :<|> getAlbumTracks
+    :<|> removeAlbums
+    :<|> getArtist
+    :<|> getCategories
+    :<|> getEpisode
+    :<|> getSavedEpisodes
+    :<|> saveEpisodes
+    :<|> removeEpisodes
+    :<|> getPlaybackState
+    :<|> transferPlayback
+    :<|> getAvailableDevices
+    :<|> getCurrentlyPlayingTrack
+    :<|> startPlayback
+    :<|> pausePlayback
+    :<|> skipToNext
+    :<|> skipToPrevious
+    :<|> seekToPosition
+    :<|> getPlaylist
+    :<|> addToPlaylist
+    :<|> getMyPlaylists
+    :<|> createPlaylist
+    :<|> getSearch
+    :<|> getTrack
+    :<|> getSavedTracks
+    :<|> saveTracks
+    :<|> removeTracks
+    :<|> getMe
+    :<|> getUser
+    :<|> unfollowPlaylist =
         client (flatten $ Proxy @Spotify.Servant.API)
 
-refreshAccessToken0
-    :<|> requestAccessToken0
-    :<|> authorize0 =
+refreshAccessToken
+    :<|> requestAccessToken
+    :<|> authorize =
         client $ Proxy @Spotify.Servant.AccountsAPI
