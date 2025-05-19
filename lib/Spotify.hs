@@ -37,7 +37,7 @@ import Network.HTTP.Client (Manager)
 import Network.HTTP.Client.TLS (newTlsManager)
 import Network.HTTP.Types (Status (statusCode))
 import Servant.API (NoContent (NoContent), (:<|>) ((:<|>)))
-import Servant.Client (BaseUrl (BaseUrl, baseUrlHost), ClientError (DecodeFailure, FailureResponse), ClientM, Scheme (Http), mkClientEnv, responseBody, responseStatusCode, runClientM)
+import Servant.Client (BaseUrl (BaseUrl, baseUrlHost), ClientError (DecodeFailure, FailureResponse), ClientM, Scheme (Https), mkClientEnv, responseBody, responseStatusCode, runClientM)
 import Servant.Links (allLinks, linkURI)
 import System.Directory (XdgDirectory (XdgConfig), createDirectoryIfMissing, getTemporaryDirectory, getXdgDirectory)
 import System.FilePath ((</>))
@@ -151,8 +151,8 @@ data Auth = Auth
     deriving (Show)
 
 mainBase, accountsBase :: BaseUrl
-mainBase = BaseUrl Http "api.spotify.com" 80 "v1"
-accountsBase = BaseUrl Http "accounts.spotify.com" 80 "api"
+mainBase = BaseUrl Https "api.spotify.com" 443 "v1"
+accountsBase = BaseUrl Https "accounts.spotify.com" 443 "api"
 
 -- helpers for wrapping Servant API
 noContent :: (Functor f) => f NoContent -> f ()
