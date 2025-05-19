@@ -1,12 +1,6 @@
 module Spotify.CreateArtistLikedSongsPlaylist (main) where
 
 import Spotify
-import Spotify.Types.Artists
-import Spotify.Types.Misc
-import Spotify.Types.Playlists
-import Spotify.Types.Simple
-import Spotify.Types.Tracks
-import Spotify.Types.Users
 
 import Control.Monad (void)
 import Control.Monad.IO.Class (liftIO)

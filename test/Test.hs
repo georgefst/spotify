@@ -3,10 +3,6 @@
 module Test (tests) where
 
 import Spotify
-import Spotify.Types.Misc
-import Spotify.Types.Playlists
-import Spotify.Types.Simple
-import Spotify.Types.Users
 
 import Control.Monad
 import Data.Functor

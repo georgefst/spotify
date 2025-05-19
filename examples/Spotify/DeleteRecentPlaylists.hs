@@ -1,8 +1,6 @@
 module Spotify.DeleteRecentPlaylists (main) where
 
 import Spotify
-import Spotify.Types.Misc
-import Spotify.Types.Simple
 
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Foldable (for_)

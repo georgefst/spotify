@@ -1,9 +1,6 @@
 module Spotify.CheckPlaylistOverlap (main) where
 
 import Spotify
-import Spotify.Types.Misc
-import Spotify.Types.Playlists
-import Spotify.Types.Tracks
 
 import Control.Monad (join, (<=<))
 import Control.Monad.IO.Class (liftIO)

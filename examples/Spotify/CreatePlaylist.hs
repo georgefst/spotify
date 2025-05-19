@@ -2,13 +2,6 @@
 module Spotify.CreatePlaylist (main) where
 
 import Spotify
-import Spotify.Types.Albums
-import Spotify.Types.Misc
-import Spotify.Types.Playlists
-import Spotify.Types.Search
-import Spotify.Types.Simple
-import Spotify.Types.Tracks
-import Spotify.Types.Users
 
 import Control.Monad ((<=<))
 import Control.Monad.Except (MonadError (throwError), runExceptT)

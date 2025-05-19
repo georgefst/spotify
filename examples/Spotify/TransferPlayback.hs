@@ -1,7 +1,6 @@
 module Spotify.TransferPlayback (main) where
 
 import Spotify
-import Spotify.Types.Player
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Foldable (for_)

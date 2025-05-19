@@ -6,7 +6,6 @@ import Spotify.CreateArtistLikedSongsPlaylist qualified
 import Spotify.CreatePlaylist qualified
 import Spotify.DeleteRecentPlaylists qualified
 import Spotify.TransferPlayback qualified
-import Spotify.Types.Playlists
 
 import Data.String (fromString)
 import Data.Text qualified as T
