@@ -42,6 +42,19 @@ module Spotify (
     skipToPrevious,
     seekToPosition,
     allPages,
+    module Spotify.Servant.Core,
+    module Spotify.Types.Albums,
+    module Spotify.Types.Artists,
+    module Spotify.Types.Auth,
+    module Spotify.Types.Categories,
+    module Spotify.Types.Episodes,
+    module Spotify.Types.Misc,
+    module Spotify.Types.Player,
+    module Spotify.Types.Playlists,
+    module Spotify.Types.Search,
+    module Spotify.Types.Simple,
+    module Spotify.Types.Tracks,
+    module Spotify.Types.Users,
 )
 where
 
