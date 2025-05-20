@@ -286,10 +286,6 @@ flip3 :: (a0 -> a1 -> a2 -> a3 -> b) -> a1 -> a2 -> a3 -> a0 -> b
 flip3 f = flip2 . flip f
 flip4 :: (a0 -> a1 -> a2 -> a3 -> a4 -> b) -> a1 -> a2 -> a3 -> a4 -> a0 -> b
 flip4 f = flip3 . flip f
-flip5 :: (a0 -> a1 -> a2 -> a3 -> a4 -> a5 -> b) -> a1 -> a2 -> a3 -> a4 -> a5 -> a0 -> b
-flip5 f = flip4 . flip f
-flip6 :: (a0 -> a1 -> a2 -> a3 -> a4 -> a5 -> a6 -> b) -> a1 -> a2 -> a3 -> a4 -> a5 -> a6 -> a0 -> b
-flip6 f = flip5 . flip f
 
 getAlbum :: (MonadSpotify m) => AlbumID -> m Album
 getAlbum a = inSpot $ flip2 Spotify.Client.getAlbum a marketFromToken
@@ -311,7 +307,7 @@ removeTracks :: (MonadSpotify m) => [TrackID] -> m ()
 removeTracks = noContent . inSpot . flip1 Spotify.Client.removeTracks . IDs
 
 search :: (MonadSpotify m) => Text -> [SearchType] -> Maybe Text -> Maybe Market -> PagingParams -> m SearchResult
-search q t e m = inSpot . flip withPagingParams (flip6 Spotify.Client.getSearch q t e m)
+search q t e m = inSpot . flip (flip withPagingParams . flip4 Spotify.Client.getSearch q t e m)
 
 getMe :: (MonadSpotify m) => m User
 getMe = inSpot $ flip0 Spotify.Client.getMe
