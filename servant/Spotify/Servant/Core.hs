@@ -56,10 +56,12 @@ type RefreshAccessToken =
 
 type AuthHeader = Header' '[Strict, Required] "Authorization" AccessToken
 
-type SpotPaging a =
+type SpotPaging a = SpotPaging' (Paging a)
+
+type SpotPaging' a =
     QueryParam "limit" Int
         :> QueryParam "offset" Int
-        :> Get '[JSON] (Paging a)
+        :> Get '[JSON] a
 
 -- TODO this is all a rather elaborate workaround for limitations of `UVerb`
 -- namely that the content-type can't depend on the return code

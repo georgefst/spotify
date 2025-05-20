@@ -311,7 +311,7 @@ removeTracks :: (MonadSpotify m) => [TrackID] -> m ()
 removeTracks = noContent . inSpot . flip1 Spotify.Client.removeTracks . IDs
 
 search :: (MonadSpotify m) => Text -> [SearchType] -> Maybe Text -> Maybe Market -> PagingParams -> m SearchResult
-search q t e m = inSpot . flip withPagingParams \limit offset -> flip6 Spotify.Client.getSearch q t e limit m offset
+search q t e m = inSpot . flip withPagingParams (flip6 Spotify.Client.getSearch q t e m)
 
 getMe :: (MonadSpotify m) => m User
 getMe = inSpot $ flip0 Spotify.Client.getMe
