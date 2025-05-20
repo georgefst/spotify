@@ -8,7 +8,7 @@ module Spotify (
     noContent,
     marketFromToken,
     withPagingParams,
-    PagingParams(..),
+    PagingParams (..),
     noPagingParams,
     newToken,
     newTokenIO,
