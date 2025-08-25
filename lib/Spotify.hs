@@ -208,7 +208,7 @@ data Auth = Auth
 
 mainBase, accountsBase :: BaseUrl
 mainBase = BaseUrl Https "api.spotify.com" 443 "v1"
-accountsBase = BaseUrl Https "accounts.spotify.com" 443 "api"
+accountsBase = BaseUrl Https "accounts.spotify.com" 443 ""
 
 -- helpers for wrapping Servant API
 noContent :: (Functor f) => f NoContent -> f ()

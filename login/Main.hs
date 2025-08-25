@@ -13,7 +13,7 @@ import Network.HTTP.Client.TLS (newTlsManager)
 import Network.Wai.Handler.Warp (Port, defaultSettings, runSettings, setBeforeMainLoop, setPort)
 import Options.Applicative
 import Servant (Get, QueryParam', Required, Strict, linkURI, safeLink, serve, type (:>))
-import Servant.Client (baseUrlPath, showBaseUrl)
+import Servant.Client (showBaseUrl)
 import Servant.HTML.Lucid (HTML)
 import Spotify
 import Spotify.Servant (AccountsAPI)
@@ -36,7 +36,7 @@ run port clientId clientSecret = do
             & setBeforeMainLoop do
                 let mkLink = safeLink (Proxy @AccountsAPI) (Proxy @Authorize)
                     link = mkLink clientId "code" redirect Nothing (Just $ ScopeSet allScopes) Nothing
-                success <- openBrowser $ showBaseUrl accountsBase{baseUrlPath = ""} <> "/" <> show (linkURI link)
+                success <- openBrowser $ showBaseUrl accountsBase <> "/" <> show (linkURI link)
                 when (not success) $ T.putStrLn "Failed to open browser"
             & setPort port
         )
