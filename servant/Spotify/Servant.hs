@@ -27,6 +27,5 @@ type API =
            )
 
 type AccountsAPI =
-    RefreshAccessToken
-        :<|> RequestAccessToken
-        :<|> Authorize
+    Authorize
+        :<|> ("api" :> (RefreshAccessToken :<|> RequestAccessToken))

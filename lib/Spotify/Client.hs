@@ -42,7 +42,7 @@ getAlbum
     :<|> unfollowPlaylist =
         client (flatten $ Proxy @Spotify.Servant.API)
 
-refreshAccessToken
-    :<|> requestAccessToken
-    :<|> authorize =
+authorize
+    :<|> refreshAccessToken
+    :<|> requestAccessToken =
         client $ Proxy @Spotify.Servant.AccountsAPI
