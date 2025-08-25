@@ -13,8 +13,6 @@ module Spotify (
     newToken,
     newTokenIO,
     newTokenIO',
-    getAuthCodeInteractive,
-    authorizeUrl,
     getAlbum,
     getAlbumTracks,
     removeAlbums,
@@ -63,7 +61,6 @@ module Spotify (
 where
 
 import Spotify.Client qualified
-import Spotify.Servant qualified
 import Spotify.Servant.Core
 import Spotify.Types.Albums
 import Spotify.Types.Artists
@@ -89,8 +86,6 @@ import Data.Aeson (FromJSON, eitherDecode)
 import Data.Bifunctor (bimap)
 import Data.Coerce (coerce)
 import Data.Composition ((.:), (.:.))
-import Data.Proxy (Proxy (Proxy))
-import Data.Set (Set)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
@@ -98,9 +93,8 @@ import GHC.Generics (Generic)
 import Network.HTTP.Client (Manager)
 import Network.HTTP.Client.TLS (newTlsManager)
 import Network.HTTP.Types (Status (statusCode))
-import Servant.API (NoContent (NoContent), (:<|>) ((:<|>)))
-import Servant.Client (BaseUrl (BaseUrl, baseUrlHost), ClientError (DecodeFailure, FailureResponse), ClientM, Scheme (Https), mkClientEnv, responseBody, responseStatusCode, runClientM)
-import Servant.Links (allLinks, linkURI)
+import Servant.API (NoContent (NoContent))
+import Servant.Client (BaseUrl (BaseUrl), ClientError (DecodeFailure, FailureResponse), ClientM, Scheme (Https), mkClientEnv, responseBody, responseStatusCode, runClientM)
 import System.Directory (XdgDirectory (XdgConfig), createDirectoryIfMissing, getTemporaryDirectory, getXdgDirectory)
 import System.FilePath ((</>))
 import System.IO (hFlush, stdout)
@@ -249,32 +243,6 @@ newTokenIO' man clientId clientSecret redirectURI authCode =
                 (IdAndSecret clientId clientSecret)
             )
             (mkClientEnv man accountsBase)
-
--- spotipy-esque
-getAuthCodeInteractive :: ClientId -> URL -> Maybe (Set Scope) -> IO (Maybe AuthCode)
-getAuthCodeInteractive clientId redirectURI scopes = do
-    T.putStrLn $ "Go to this URL: " <> (authorizeUrl clientId redirectURI scopes).unwrap
-    T.putStr "Copy the URL you are redirected to: " >> hFlush stdout
-    fmap AuthCode . T.stripPrefix (redirectURI.unwrap <> "/?code=") <$> T.getLine
-authorizeUrl :: ClientId -> URL -> Maybe (Set Scope) -> URL
-authorizeUrl clientId redirectURI scopes =
-    URL $
-        "https://"
-            <> T.pack
-                ( baseUrlHost accountsBase
-                    <> "/"
-                    <> show (linkURI link)
-                )
-  where
-    link =
-        link0
-            clientId
-            "code"
-            redirectURI
-            Nothing
-            (ScopeSet <$> scopes)
-            Nothing
-    _ :<|> _ :<|> link0 = allLinks $ Proxy @Spotify.Servant.AccountsAPI
 
 flip0 :: (a0 -> b) -> a0 -> b
 flip0 f = f
