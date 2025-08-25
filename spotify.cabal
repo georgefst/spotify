@@ -136,12 +136,12 @@ executable login
         http-client-tls ^>= 0.3.6,
         http-types ^>= 0.12.3,
         lucid ^>= 2.11,
-        open-browser >= 0.4.0 && < 0.5,
+        open-browser ^>= 0.4.0,
         optparse-applicative ^>= 0.19,
         servant-client ^>= 0.20,
         servant-lucid ^>= 0.9,
-        servant-server >= 0.20.3 && < 0.21,
-        warp >= 3.4.8 && < 3.5,
+        servant-server ^>= 0.20.3,
+        warp ^>= 3.4.8,
 
 executable examples
     import: common
