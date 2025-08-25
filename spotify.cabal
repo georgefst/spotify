@@ -124,6 +124,25 @@ library
         servant-client ^>= {0.19, 0.20},
         servant-flatten ^>= 0.2,
 
+executable login
+    import: common
+    hs-source-dirs: login
+    main-is: Main.hs
+    build-depends:
+        spotify,
+        spotify-types,
+        spotify-servant,
+        http-client ^>= 0.7.13,
+        http-client-tls ^>= 0.3.6,
+        http-types ^>= 0.12.3,
+        lucid ^>= 2.11,
+        open-browser >= 0.4.0 && < 0.5,
+        optparse-applicative ^>= 0.19,
+        servant-client ^>= 0.20,
+        servant-lucid ^>= 0.9,
+        servant-server >= 0.20.3 && < 0.21,
+        warp >= 3.4.8 && < 3.5,
+
 executable examples
     import: common
     hs-source-dirs: examples
