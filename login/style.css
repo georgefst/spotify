@@ -1,0 +1,26 @@
+:root {
+  --blue-dark: #162745;
+  --blue-medium: #3863af;
+  --blue-light: #95afdd;
+}
+
+body {
+  margin: 0;
+  font-family: Helvetica;
+  font-size: large;
+  color: white;
+  background-color: var(--blue-dark);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  > * {
+    width: 32rem;
+    word-break: break-all;
+    > h1 {
+      color: var(--blue-light);
+    }
+  }
+}

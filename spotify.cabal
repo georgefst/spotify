@@ -141,6 +141,7 @@ executable login
         servant-client ^>= 0.20,
         servant-lucid ^>= 0.9,
         servant-server ^>= 0.20.3,
+        wai-app-static ^>= 3.1.9,
         warp ^>= 3.4.8,
 
 executable examples
