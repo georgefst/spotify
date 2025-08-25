@@ -61,7 +61,7 @@ data TokenResponse' = TokenResponse'
     { accessToken :: AccessToken
     , tokenType :: TokenType
     , expiresIn :: Int
-    , scope :: Text
+    , scope :: Maybe Text
     , refreshToken :: RefreshToken
     }
     deriving (Eq, Ord, Show, Generic)
