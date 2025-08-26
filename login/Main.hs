@@ -9,7 +9,7 @@ import Data.Functor
 import Data.Proxy
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
-import Lucid (Html, ToHtml (toHtml), div_, h1_, href_, link_, rel_)
+import Lucid (Html, ToHtml (toHtml), div_, h1_, href_, link_, onclick_, rel_)
 import Network.HTTP.Client.TLS (newTlsManager)
 import Network.Wai.Application.Static (defaultWebAppSettings, staticApp)
 import Network.Wai.Handler.Warp (Port, defaultSettings, runSettings, setBeforeMainLoop, setPort)
@@ -49,7 +49,7 @@ run port clientId clientSecret = do
                     for_
                         [("Access token:", resp.accessToken.unwrap), ("Refresh token:", resp.refreshToken.unwrap)]
                         \(t, c) -> div_ [] do
-                            h1_ t
+                            h1_ [onclick_ $ "navigator.clipboard.writeText('" <> c <> "')"] t
                             toHtml c
           )
             :<|> pure (staticApp $ defaultWebAppSettings ".")

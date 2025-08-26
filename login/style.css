@@ -21,6 +21,7 @@ body {
     word-break: break-all;
     > h1 {
       color: var(--blue-light);
+      cursor: pointer;
     }
   }
 }
