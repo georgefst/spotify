@@ -3,6 +3,7 @@
 module Main (main) where
 
 import Control.Monad
+import Data.Foldable (for_)
 import Data.Function
 import Data.Functor
 import Data.Proxy
@@ -45,12 +46,11 @@ run port clientId clientSecret = do
         $ ( \authCode ->
                 newTokenIO' man clientId clientSecret redirect authCode <&> either (toHtml . show) \resp -> do
                     link_ [rel_ "stylesheet", href_ "login/style.css"]
-                    div_ [] do
-                        h1_ "Access token:"
-                        toHtml resp.accessToken.unwrap
-                    div_ [] do
-                        h1_ "Refresh token:"
-                        toHtml resp.refreshToken.unwrap
+                    for_
+                        [("Access token:", resp.accessToken.unwrap), ("Refresh token:", resp.refreshToken.unwrap)]
+                        \(t, c) -> div_ [] do
+                            h1_ t
+                            toHtml c
           )
             :<|> pure (staticApp $ defaultWebAppSettings ".")
   where
