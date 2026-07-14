@@ -37,7 +37,6 @@ common common
         text ^>= {1.2.5, 2.0, 2.1},
         transformers ^>= {0.5.6, 0.6},
         time ^>= {1.11.1, 1.12, 1.13, 1.14},
-        unordered-containers ^>= 0.2.19,
     default-language: GHC2021
     default-extensions:
         AllowAmbiguousTypes

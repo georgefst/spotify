@@ -5,15 +5,13 @@ import Spotify.Types.Internal.CustomJSON
 import Control.Monad ((>=>))
 import Data.Aeson (FromJSON, parseJSON)
 import Data.ByteString.Base64 qualified as B64
-import Data.HashMap.Strict qualified as HM
 import Data.String (IsString)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import GHC.Generics (Generic)
 import Servant.API (FromHttpApiData, ToHttpApiData (toUrlPiece))
 import Spotify.Types.Misc (URL (..))
-import Web.FormUrlEncoded (Form (Form), ToForm)
-import Web.Internal.FormUrlEncoded (toForm)
+import Web.FormUrlEncoded (ToForm, toForm)
 
 newtype ClientId = ClientId {unwrap :: Text}
     deriving newtype (Eq, Ord, Show, IsString, ToHttpApiData)
@@ -70,18 +68,16 @@ data TokenResponse' = TokenResponse'
 data RequestAccessTokenForm = RequestAccessTokenForm AuthCode URL
 instance ToForm RequestAccessTokenForm where
     toForm (RequestAccessTokenForm (AuthCode t) r) =
-        Form $
-            HM.fromList
-                [ ("grant_type", ["authorization_code"])
-                , ("code", [t])
-                , ("redirect_uri", [r.unwrap])
-                ]
+        toForm
+            [ ("grant_type" :: Text, "authorization_code")
+            , ("code", t)
+            , ("redirect_uri", r.unwrap)
+            ]
 
 newtype RefreshAccessTokenForm = RefreshAccessTokenForm RefreshToken
 instance ToForm RefreshAccessTokenForm where
     toForm (RefreshAccessTokenForm (RefreshToken t)) =
-        Form $
-            HM.fromList
-                [ ("grant_type", ["refresh_token"])
-                , ("refresh_token", [t])
-                ]
+        toForm
+            [ ("grant_type" :: Text, "refresh_token")
+            , ("refresh_token", t)
+            ]
